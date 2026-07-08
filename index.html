@@ -12,7 +12,7 @@
         body {
             font-family: 'Inter', system_ui, sans-serif;
             background-image: 
-                linear-gradient(rgba(10, 10, 10, 0.75), rgba(10, 10, 10, 0.85)),
+                linear-gradient(rgba(10, 10, 10, 0.78), rgba(10, 10, 10, 0.88)),
                 url('9MGE6.jpg');
             background-size: cover;
             background-position: center;
@@ -22,16 +22,16 @@
             overflow: hidden;
         }
 
-        /* Breathing Golden Flames Effect */
+        /* Golden Breathing Flames */
         body::before {
             content: '';
             position: absolute;
             inset: 0;
             background: radial-gradient(
                 circle at 72% 58%,
-                rgba(250, 204, 21, 0.22) 0%,
-                rgba(251, 191, 36, 0.12) 28%,
-                transparent 60%
+                rgba(250, 204, 21, 0.25) 0%,
+                rgba(251, 191, 36, 0.12) 30%,
+                transparent 65%
             );
             animation: breatheFlames 8s ease-in-out infinite;
             pointer-events: none;
@@ -40,19 +40,19 @@
 
         @keyframes breatheFlames {
             0%, 100% {
-                opacity: 0.6;
+                opacity: 0.7;
                 transform: scale(1);
             }
             50% {
                 opacity: 1;
-                transform: scale(1.12);
+                transform: scale(1.15);
             }
         }
         
         .font-display {
             font-family: 'Cinzel', 'Inter', serif;
             font-weight: 600;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
         }
 
         .gallery-img {
@@ -60,35 +60,150 @@
         }
         
         .gallery-img:hover {
-            transform: scale(1.05);
+            transform: scale(1.06);
         }
     </style>
 </head>
 <body class="bg-zinc-950 text-white">
     
-    <!-- Minimal Nav -->
-    <nav class="border-b border-white/10">
-        <div class="max-w-screen-xl mx-auto px-8 h-20 flex items-center justify-between">
-            <div class="flex items-center gap-x-3">
-                <div class="w-8 h-8 bg-white rounded-2xl flex items-center justify-center">
-                    <span class="font-display text-xl font-semibold tracking-tighter text-zinc-950">R</span>
+    <!-- Nav -->
+    <nav class="border-b border-white/10 bg-black/40 backdrop-blur-lg sticky top-0 z-50">
+        <div class="max-w-screen-xl mx-auto px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center gap-x-3">
+                    <div class="w-9 h-9 bg-white rounded-2xl flex items-center justify-center">
+                        <span class="font-display text-xl font-semibold tracking-tighter text-zinc-950">R</span>
+                    </div>
+                    <span class="font-display text-2xl font-semibold tracking-tighter">Reial</span>
                 </div>
-                <span class="font-display text-2xl font-semibold tracking-tighter">Reial</span>
+                
+                <div class="flex items-center gap-x-3 text-sm">
+                    <button onclick="document.getElementById('gallery').scrollIntoView({ behavior: 'smooth' })" 
+                            class="px-5 py-2 rounded-2xl hover:bg-white/5 transition-colors">Gallery</button>
+                    <button onclick="showSignupModal()" 
+                            class="px-6 py-2 bg-white text-zinc-950 rounded-2xl font-medium hover:bg-zinc-100 transition-colors">Sign up</button>
+                </div>
             </div>
-            
         </div>
     </nav>
 
-    <!-- Hero / Name -->
-    <div class="max-w-screen-xl mx-auto px-8 pt-24 pb-20 text-center">
-        <div class="max-w-md mx-auto">
+    <!-- Hero -->
+    <div class="max-w-screen-xl mx-auto px-8 pt-20 pb-16 text-center">
+        <div class="max-w-lg mx-auto">
             <h1 class="font-display text-[92px] md:text-[110px] leading-none tracking-tighter font-semibold">Reial</h1>
+            
+            <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+                <button onclick="document.getElementById('gallery').scrollIntoView({ behavior: 'smooth' })" 
+                        class="px-10 h-14 border border-white/30 hover:bg-white/5 rounded-3xl text-base font-medium transition-all">
+                    Gallery
+                </button>
+                
+                <button onclick="showSignupModal()" 
+                        class="px-10 h-14 bg-white text-zinc-950 rounded-3xl text-base font-semibold hover:bg-zinc-100 transition-all">
+                    Sign up
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gallery -->
+    <div id="gallery" class="max-w-screen-xl mx-auto px-8 pb-24">
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <span class="text-xs tracking-[2px] text-white/50">GALLERY</span>
+            </div>
+            <label class="cursor-pointer px-6 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-2xl text-sm font-medium flex items-center gap-x-2 transition-colors">
+                <i class="fa-solid fa-upload"></i>
+                <span>Upload Photo</span>
+                <input type="file" id="upload-input" accept="image/*" class="hidden" onchange="uploadPhoto(event)">
+            </label>
+        </div>
+
+        <div id="gallery-grid" class="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-5xl mx-auto">
+            <!-- Default photos -->
+            <div class="group relative aspect-[4/3] rounded-3xl overflow-hidden cursor-pointer border border-white/10" onclick="showLightbox(0)">
+                <img src="gallery-1.jpg" class="gallery-img w-full h-full object-cover" alt="">
+                <div class="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors"></div>
+            </div>
+            <div class="group relative aspect-[4/3] rounded-3xl overflow-hidden cursor-pointer border border-white/10" onclick="showLightbox(1)">
+                <img src="gallery-2.jpg" class="gallery-img w-full h-full object-cover" alt="">
+                <div class="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors"></div>
+            </div>
+            <div class="group relative aspect-[4/3] rounded-3xl overflow-hidden cursor-pointer border border-white/10" onclick="showLightbox(2)">
+                <img src="gallery-3.jpg" class="gallery-img w-full h-full object-cover" alt="">
+                <div class="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sign up Modal -->
+    <div id="signup-modal" onclick="hideSignupModal()" class="hidden fixed inset-0 bg-black/80 z-[200] flex items-center justify-center p-6">
+        <div onclick="event.stopImmediatePropagation()" class="bg-zinc-900 border border-white/10 rounded-3xl p-8 w-full max-w-md">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <div class="font-semibold text-2xl">Sign up</div>
+                    <div class="text-white/60 text-sm mt-1">Be the first to know when something new drops</div>
+                </div>
+                <button onclick="hideSignupModal()" class="text-3xl leading-none text-white/50 hover:text-white">&times;</button>
+            </div>
+            
+            <form onsubmit="handleSignup(event)">
+                <input type="email" id="email-input" placeholder="your@email.com" required
+                       class="w-full bg-zinc-950 border border-white/20 focus:border-white/40 px-5 py-4 rounded-2xl text-lg outline-none mb-4">
+                
+                <button type="submit" 
+                        class="w-full h-14 bg-white text-zinc-950 rounded-3xl font-semibold text-base hover:bg-zinc-100 transition-colors">
+                    Sign up
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div id="lightbox" onclick="hideLightbox()" class="hidden fixed inset-0 bg-black/95 z-[300] flex items-center justify-center p-4">
+        <div onclick="event.stopImmediatePropagation()" class="max-w-5xl w-full">
+            <div class="flex justify-end mb-4">
+                <button onclick="hideLightbox()" class="text-white/60 hover:text-white text-4xl leading-none">&times;</button>
+            </div>
+            <img id="lightbox-image" class="w-full max-h-[82vh] object-contain rounded-3xl" alt="">
         </div>
     </div>
 
     <script>
-        // Minimal clean version
-    </script>
+        // Upload functionality
+        function uploadPhoto(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const galleryGrid = document.getElementById('gallery-grid');
+                const newDiv = document.createElement('div');
+                newDiv.className = 'group relative aspect-[4/3] rounded-3xl overflow-hidden cursor-pointer border border-white/10';
+                newDiv.innerHTML = `
+                    <img src="${e.target.result}" class="gallery-img w-full h-full object-cover" alt="Uploaded photo">
+                    <div class="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors"></div>
+                `;
+                newDiv.onclick = () => showUploadedLightbox(e.target.result);
+                galleryGrid.appendChild(newDiv);
+            };
+            reader.readAsDataURL(file);
+            event.target.value = '';
+        }
+
+        function showUploadedLightbox(src) {
+            const lightbox = document.getElementById('lightbox');
+            document.getElementById('lightbox-image').src = src;
+            lightbox.classList.remove('hidden');
+            lightbox.classList.add('flex');
+        }
+
+        // Sign up modal
+        function showSignupModal() {
+            const modal = document.getElementById('signup-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
 
         function hideSignupModal() {
             const modal = document.getElementById('signup-modal');
@@ -98,58 +213,31 @@
 
         function handleSignup(e) {
             e.preventDefault();
-            const email = document.getElementById('email-input').value;
-            
             const modalContent = document.querySelector('#signup-modal > div');
             modalContent.innerHTML = `
                 <div class="text-center py-8">
                     <i class="fa-solid fa-check-circle text-5xl text-emerald-400 mb-6"></i>
-                    <div class="text-2xl font-semibold">Thank you</div>
-                    <p class="text-white/60 mt-2">You’re on the list. We’ll email you when the shop opens.</p>
-                    
-                    <button onclick="hideSignupModal()" 
-                            class="mt-8 px-8 h-12 border border-white/20 hover:bg-white/5 rounded-2xl text-sm">
-                        Close
-                    </button>
+                    <div class="text-2xl font-semibold">Thank you!</div>
+                    <p class="text-white/60 mt-2">You're on the list.</p>
+                    <button onclick="hideSignupModal()" class="mt-8 px-8 h-12 border border-white/20 hover:bg-white/5 rounded-2xl text-sm">Close</button>
                 </div>
             `;
-            
-            console.log('New signup:', email);
         }
 
-        document.addEventListener('keydown', function(e) {
+        // Lightbox for default images
+        function showLightbox(index) {
+            const images = ['gallery-1.jpg', 'gallery-2.jpg', 'gallery-3.jpg'];
             const lightbox = document.getElementById('lightbox');
-            if (lightbox.classList.contains('flex')) {
-                if (e.key === 'Escape') hideLightbox();
-                if (e.key === 'ArrowRight') {
-                    currentIndex = (currentIndex + 1) % galleryItems.length;
-                    document.getElementById('lightbox-image').src = galleryItems[currentIndex].src;
-                }
-                if (e.key === 'ArrowLeft') {
-                    currentIndex = (currentIndex - 1 + galleryItems.length) % galleryItems.length;
-                    document.getElementById('lightbox-image').src = galleryItems[currentIndex].src;
-                }
-            }
-            
-            if (e.key === 'Escape') {
-                const signup = document.getElementById('signup-modal');
-                if (signup.classList.contains('flex')) hideSignupModal();
-            }
-        });
-
-        function init() {
-            tailwind.config = {
-                theme: {
-                    extend: {
-                        fontFamily: {
-                            'display': ['Space Grotesk', 'Inter', 'system-ui', 'sans-serif']
-                        }
-                    }
-                }
-            };
+            document.getElementById('lightbox-image').src = images[index];
+            lightbox.classList.remove('hidden');
+            lightbox.classList.add('flex');
         }
-        
-        window.onload = init;
+
+        function hideLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.classList.remove('flex');
+            lightbox.classList.add('hidden');
+        }
     </script>
 </body>
 </html>
