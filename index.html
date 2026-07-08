@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reial</title>
     <meta name="description" content="Reial">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="tailwind.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
     
@@ -42,13 +42,15 @@
     </style>
 </head>
 <body class="bg-zinc-950 text-white">
+    <!-- Dragon Fire Particle Canvas -->
+    <canvas id="fire-canvas" class="fixed inset-0 pointer-events-none z-[5]"></canvas>
     
     <!-- Nav -->
     <nav class="border-b border-white/10 bg-black/40 backdrop-blur-lg sticky top-0 z-50">
         <div class="max-w-screen-xl mx-auto px-8">
             <div class="flex items-center justify-between h-20">
                 <div class="flex items-center gap-x-3">
-                    <img src="dragon-logo.jpg" alt="Reial Logo" class="w-9 h-9 rounded-2xl object-cover border border-white/20">
+                    <img src="dragon-logo.jpg" alt="Reial Logo" class="w-12 h-12 rounded-2xl object-cover border border-white/20">
                     <span class="font-display text-2xl font-semibold tracking-tighter">Reial</span>
                 </div>
                 
@@ -110,35 +112,30 @@
         </div>
     </div>
 
-    <!-- Chat Room -->
+    <!-- Comment Box -->
     <div class="max-w-screen-xl mx-auto px-8 pb-20">
-        <div class="max-w-2xl mx-auto">
+        <div class="max-w-xl mx-auto">
             <div class="mb-6 text-center">
-                <span class="text-xs tracking-[2px] text-white/50">THE HALL</span>
-                <h2 class="font-display text-4xl mt-2">Chat Room</h2>
-                <p class="text-white/60 text-sm mt-1">Real-time public chat • Powered by Firebase</p>
+                <span class="text-xs tracking-[2px] text-white/50">LEAVE A MESSAGE</span>
+                <h2 class="font-display text-3xl mt-2">Comment Box</h2>
             </div>
 
-            <div class="bg-zinc-900 border border-white/10 rounded-3xl overflow-hidden">
+            <form id="comment-form" onsubmit="submitComment(event)" class="bg-zinc-900 border border-white/10 rounded-3xl p-8">
+                <input type="text" id="comment-name" placeholder="Your name" required
+                       class="w-full bg-zinc-950 border border-white/20 focus:border-white/40 px-5 py-3 rounded-2xl text-sm mb-4 outline-none">
                 
-                <!-- Messages -->
-                <div id="chat-messages" class="h-96 overflow-y-auto p-6 space-y-4 bg-black/40 text-sm">
-                    <!-- Messages loaded from Firebase -->
-                </div>
+                <textarea id="comment-text" placeholder="Write your comment..." rows="4" required
+                          class="w-full bg-zinc-950 border border-white/20 focus:border-white/40 px-5 py-3 rounded-2xl text-sm mb-4 outline-none resize-y"></textarea>
+                
+                <button type="submit" 
+                        class="w-full h-12 bg-white text-zinc-950 rounded-2xl font-semibold text-sm hover:bg-zinc-200 transition-colors">
+                    Post Comment
+                </button>
+            </form>
 
-                <!-- Input -->
-                <div class="p-4 border-t border-white/10 bg-zinc-950 flex gap-3">
-                    <input id="chat-input" type="text" placeholder="Type your message..." 
-                           class="flex-1 bg-zinc-900 border border-white/20 focus:border-white/40 px-5 py-3 rounded-2xl text-sm outline-none"
-                           onkeypress="if(event.key === 'Enter') sendChatMessage()">
-                    <button onclick="sendChatMessage()" 
-                            class="px-6 bg-white text-zinc-950 rounded-2xl font-semibold hover:bg-zinc-200 transition-colors">
-                        Send
-                    </button>
-                </div>
+            <div id="comment-success" class="hidden mt-4 text-center text-emerald-400 text-sm">
+                Thank you! Your comment has been received.
             </div>
-            
-            <p class="text-center text-xs text-white/40 mt-4">Messages are public and saved in real-time.</p>
         </div>
     </div>
 
@@ -154,8 +151,10 @@
             </div>
             
             <form onsubmit="handleSignup(event)">
-                <input type="email" id="email-input" placeholder="your@email.com" required
+                <input type="email" id="email-input" placeholder="your@email.com" value="reinreial@gmail.com" required
                        class="w-full bg-zinc-950 border border-white/20 focus:border-white/40 px-5 py-4 rounded-2xl text-lg outline-none mb-4">
+                
+                <div id="email-error" class="text-red-400 text-sm mb-3 hidden">Please enter a valid email address.</div>
                 
                 <button type="submit" 
                         class="w-full h-14 bg-white text-zinc-950 rounded-3xl font-semibold text-base hover:bg-zinc-100 transition-colors">
@@ -182,64 +181,7 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // ==================== CHAT ROOM ====================
-        let username = localStorage.getItem('reial_username') || '';
-
-        function askForUsername() {
-            if (!username) {
-                username = prompt("Enter your name for the chat:") || "Anonymous";
-                localStorage.setItem('reial_username', username);
-            }
-        }
-
-        function loadChatMessages() {
-            const messagesDiv = document.getElementById('chat-messages');
-            const messagesRef = database.ref('chat_messages');
-
-            messagesRef.on('child_added', (snapshot) => {
-                const message = snapshot.val();
-                displayMessage(message);
-            });
-        }
-
-        function displayMessage(message) {
-            const messagesDiv = document.getElementById('chat-messages');
-            const div = document.createElement('div');
-            div.className = 'flex gap-3 chat-message';
-            div.innerHTML = `
-                <div class="w-8 h-8 bg-white/10 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold">
-                    ${message.username ? message.username[0].toUpperCase() : 'U'}
-                </div>
-                <div class="flex-1">
-                    <div class="flex items-baseline gap-2">
-                        <span class="font-semibold text-white">${message.username || 'Anonymous'}</span>
-                        <span class="text-white/50 text-xs">${message.time}</span>
-                    </div>
-                    <div class="text-white">${message.text}</div>
-                </div>
-            `;
-            messagesDiv.appendChild(div);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-
-        function sendChatMessage() {
-            const input = document.getElementById('chat-input');
-            if (!input.value.trim()) return;
-
-            if (!username) {
-                askForUsername();
-            }
-
-            const messagesRef = database.ref('chat_messages');
-            
-            messagesRef.push({
-                username: username,
-                text: input.value.trim(),
-                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
-            });
-
-            input.value = '';
-        }
+        // Chat removed as requested
 
         // ==================== OTHER FUNCTIONS ====================
         function uploadPhoto(event) {
@@ -283,6 +225,23 @@
 
         function handleSignup(e) {
             e.preventDefault();
+            
+            const emailInput = document.getElementById('email-input');
+            const errorDiv = document.getElementById('email-error');
+            
+            // Simple email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            if (!emailRegex.test(emailInput.value)) {
+                errorDiv.classList.remove('hidden');
+                emailInput.classList.add('border-red-400');
+                return;
+            }
+            
+            // Hide error if valid
+            errorDiv.classList.add('hidden');
+            emailInput.classList.remove('border-red-400');
+            
             const modalContent = document.querySelector('#signup-modal > div');
             modalContent.innerHTML = `
                 <div class="text-center py-8">
@@ -308,21 +267,142 @@
             lightbox.classList.add('hidden');
         }
 
-        // Initialize everything
-        window.onload = function() {
-            // Load chat messages from Firebase
-            loadChatMessages();
+        // Comment Box
+        function submitComment(e) {
+            e.preventDefault();
             
-            // Ask for username on first visit
+            const name = document.getElementById('comment-name').value;
+            const text = document.getElementById('comment-text').value;
+            const successDiv = document.getElementById('comment-success');
+            const form = document.getElementById('comment-form');
+
+            if (!name.trim() || !text.trim()) {
+                alert("Please fill in both name and comment.");
+                return;
+            }
+
+            form.style.display = 'none';
+            successDiv.classList.remove('hidden');
+
             setTimeout(() => {
-                if (!localStorage.getItem('reial_username')) {
-                    const name = prompt("Enter your name for the chat:");
-                    if (name) {
-                        localStorage.setItem('reial_username', name);
+                form.reset();
+                form.style.display = 'block';
+                successDiv.classList.add('hidden');
+            }, 5000);
+        }
+
+        // ==================== DRAGON FIRE PARTICLES ====================
+        function initFireParticles() {
+            const canvas = document.getElementById('fire-canvas');
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            class Particle {
+                constructor(type = 'fire') {
+                    this.type = type;
+                    this.x = canvas.width * 0.65 + (Math.random() - 0.5) * 250;
+                    this.y = canvas.height * 0.52 + (Math.random() - 0.5) * 140;
+
+                    if (type === 'fire') {
+                        this.size = Math.random() * 5.5 + 3.5;
+                        this.speedY = Math.random() * -3.5 - 1.8;
+                        this.speedX = (Math.random() - 0.5) * 1.5;
+                        this.life = Math.random() * 48 + 38;
+                        this.color = ['#ef4444', '#f87171', '#b91c1c'][Math.floor(Math.random() * 3)];
+                    } else {
+                        // Smoke
+                        this.size = Math.random() * 9 + 6;
+                        this.speedY = Math.random() * -1.6 - 0.7;
+                        this.speedX = (Math.random() - 0.5) * 0.9;
+                        this.life = Math.random() * 90 + 70;
+                        this.color = '#64748b';
+                    }
+                    this.maxLife = this.life;
+                }
+
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    this.life--;
+
+                    if (this.type === 'fire') {
+                        this.size *= 0.975;
+                    } else {
+                        this.size *= 0.982;
+                        this.speedX *= 0.994;
                     }
                 }
-            }, 2000);
+
+                draw() {
+                    const alpha = this.life / this.maxLife;
+                    ctx.save();
+
+                    if (this.type === 'fire') {
+                        ctx.globalAlpha = alpha * 0.9;
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        ctx.globalAlpha = alpha * 0.35;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size * 2.6, 0, Math.PI * 2);
+                        ctx.fill();
+                    } else {
+                        // Smoke
+                        ctx.globalAlpha = alpha * 0.28;
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    ctx.restore();
+                }
+            }
+
+            function createParticles(count) {
+                for (let i = 0; i < count; i++) {
+                    // 70% fire, 30% smoke
+                    const type = Math.random() < 0.7 ? 'fire' : 'smoke';
+                    particles.push(new Particle(type));
+                }
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                if (Math.random() < 0.7) {
+                    createParticles(3);
+                }
+
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    const p = particles[i];
+                    p.update();
+                    p.draw();
+
+                    if (p.life <= 0 || p.size < 0.4) {
+                        particles.splice(i, 1);
+                    }
+                }
+
+                requestAnimationFrame(animate);
+            }
+
+            animate();
         }
+
+        window.addEventListener('load', () => {
+            setTimeout(initFireParticles, 600);
+        });
     </script>
 </body>
 </html>
