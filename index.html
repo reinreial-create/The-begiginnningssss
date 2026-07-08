@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reial • Welcome</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    @keyframes blob {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(40px, -60px) scale(1.15); }
+      66% { transform: translate(-30px, 40px) scale(0.9); }
+    }
+    
+    .blob {
+      animation: blob 25s infinite ease-in-out;
+    }
+    
+    .blob-delay-1 { animation-delay: -8s; }
+    .blob-delay-2 { animation-delay: -15s; }
+    
+    .glass {
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .section-header {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      line-height: 1.05;
+      font-weight: 600;
+      letter-spacing: -0.04em;
+    }
+  </style>
+</head>
+<body class="bg-zinc-950 text-white font-sans">
+  
+  <!-- NAV -->
+  <nav class="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-zinc-950/90 backdrop-blur-xl">
+    <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+      <div class="flex items-center gap-x-3">
+        <div class="w-9 h-9 bg-white rounded-2xl flex items-center justify-center shadow-inner">
+          <span class="text-zinc-950 font-bold text-3xl tracking-[-2px]">R</span>
+        </div>
+        <span class="font-semibold text-2xl tracking-tighter">Reial</span>
+      </div>
+      
+      <div class="hidden md:flex items-center gap-x-9 text-sm font-medium">
+        <a href="#about" class="hover:text-white/70 transition-colors duration-200">About</a>
+        <a href="#obsessions" class="hover:text-white/70 transition-colors duration-200">Vibes</a>
+        <a href="#contact" class="hover:text-white/70 transition-colors duration-200">Contact</a>
+      </div>
+      
+      <div class="flex items-center gap-x-3">
+        <button onclick="document.getElementById('contact').scrollIntoView({ behavior: 'smooth' })" 
+                class="px-6 py-2.5 rounded-2xl bg-white text-zinc-950 font-semibold text-sm hover:bg-white/90 active:scale-[0.985] transition-all">
+          Let's talk
+        </button>
+        
+        <!-- Mobile menu -->
+        <button class="md:hidden w-10 h-10 flex items-center justify-center text-xl" onclick="toggleMobileMenu()">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO + BEAUTIFUL BACKGROUND -->
+  <section class="relative min-h-[100dvh] flex items-center justify-center overflow-hidden pt-16">
+    
+    <!-- BACKGROUND BASE -->
+    <div class="absolute inset-0 bg-zinc-950"></div>
+    
+    <!-- GLOWING ORBS - This is your premium animated background -->
+    <div class="absolute top-[15%] -left-24 w-[520px] h-[520px] bg-indigo-600/25 rounded-full blur-[140px] blob"></div>
+    <div class="absolute top-[30%] -right-16 w-[480px] h-[480px] bg-violet-600/25 rounded-full blur-[120px] blob blob-delay-1"></div>
+    <div class="absolute bottom-[-80px] left-[25%] w-[620px] h-[340px] bg-cyan-500/15 rounded-full blur-[150px] blob blob-delay-2"></div>
+    
+    <!-- Subtle center atmospheric glow -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] bg-white/[0.035] rounded-full blur-[220px]"></div>
+
+    <!-- HERO CONTENT -->
+    <div class="relative z-10 max-w-5xl mx-auto px-6 text-center">
+      
+      <div class="inline-flex items-center gap-x-2 px-5 py-1.5 rounded-3xl glass mb-8 text-sm tracking-[1.5px]">
+        <span>🐉</span>
+        <span class="font-medium">DRAGON • BORN 1988</span>
+      </div>
+      
+      <h1 class="section-header mb-4">
+        Hi, I'm Reial
+      </h1>
+      
+      <p class="max-w-lg mx-auto text-3xl text-white/80 mb-10 tracking-tight">
+        Professional overthinker.<br>
+        Certified creative chaos enjoyer.<br>
+        Dragon energy since '88.
+      </p>
+      
+      <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+        <button onclick="document.getElementById('obsessions').scrollIntoView({ behavior: 'smooth' })" 
+                class="group px-10 py-4 rounded-3xl bg-white text-zinc-950 font-semibold text-lg flex items-center justify-center gap-x-3 hover:bg-white/90 active:scale-[0.985] transition-all w-full sm:w-auto">
+          See my current vibes
+          <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+        </button>
+        
+        <button onclick="roar()" 
+                class="px-10 py-4 rounded-3xl glass font-semibold text-lg hover:bg-white/10 active:scale-[0.985] transition-all flex items-center justify-center gap-x-3 w-full sm:w-auto">
+          🐉 Roar with me
+        </button>
+      </div>
+      
+      <div class="mt-16 flex justify-center">
+        <div onclick="document.getElementById('about').scrollIntoView({ behavior: 'smooth' })" 
+             class="flex items-center gap-x-2 text-sm text-white/50 hover:text-white/70 cursor-pointer transition-colors">
+          <span>Scroll to explore my world</span>
+          <i class="fa-solid fa-chevron-down animate-bounce"></i>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about" class="max-w-5xl mx-auto px-6 py-24 border-t border-white/10">
+    <div class="grid md:grid-cols-12 gap-x-12 items-center">
+      <div class="md:col-span-5">
+        <span class="text-indigo-400 font-semibold tracking-[4px] text-sm">THE DRAGON FILES</span>
+        <h2 class="section-header mt-3">Born 1988.<br>Still chaotic.</h2>
+      </div>
+      <div class="md:col-span-7 mt-8 md:mt-0">
+        <div class="space-y-6 text-xl text-white/75 max-w-[42ch]">
+          <p>Hi, I'm Reial — a Dragon born in 1988. That means I'm stubborn, passionate, a little dramatic, and somehow always lucky. Classic Dragon behavior.</p>
+          <p>I overthink everything, collect random hobbies like they're shiny objects, and genuinely believe the best ideas come at 3am. 80s kid energy mixed with eternal curiosity.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OBSESSIONS / FUN SECTION -->
+  <section id="obsessions" class="bg-zinc-900 border-y border-white/10 py-20">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-y-4 mb-10">
+        <div>
+          <span class="text-indigo-400 font-semibold tracking-[3px] text-sm">DRAGON'S HOARD</span>
+          <h3 class="section-header">Current hyperfixations</h3>
+        </div>
+        <div class="text-sm text-white/60">Updated weekly (or whenever I remember)</div>
+      </div>
+      
+      <div class="grid md:grid-cols-3 gap-6">
+        <!-- Obsession 1 -->
+        <div class="group glass rounded-3xl p-8 border border-white/10 hover:border-white/30 transition-all duration-300">
+          <div class="text-5xl mb-6">🎵</div>
+          <div class="font-semibold text-3xl tracking-tight mb-3">Music on repeat</div>
+          <div class="text-white/70">Whatever makes me feel like the main character in a movie. Currently heavy on synthwave + 80s nostalgia + whatever my mood demands at 2am.</div>
+          <div class="mt-6 text-xs text-white/50">Last added: Something with too much reverb</div>
+        </div>
+        
+        <!-- Obsession 2 -->
+        <div class="group glass rounded-3xl p-8 border border-white/10 hover:border-white/30 transition-all duration-300">
+          <div class="text-5xl mb-6">🎮</div>
+          <div class="font-semibold text-3xl tracking-tight mb-3">Games I'm lost in</div>
+          <div class="text-white/70">Anything with good vibes, pretty worlds, or chaotic gameplay. I will disappear for 6 hours and call it "research".</div>
+          <div class="mt-6 text-xs text-white/50">Current status: Probably should be sleeping</div>
+        </div>
+        
+        <!-- Obsession 3 -->
+        <div class="group glass rounded-3xl p-8 border border-white/10 hover:border-white/30 transition-all duration-300">
+          <div class="text-5xl mb-6">🌙</div>
+          <div class="font-semibold text-3xl tracking-tight mb-3">3am thoughts</div>
+          <div class="text-white/70">Deep dives into random topics, conspiracy theories (for fun), design rabbit holes, and "what if I just..." ideas that may or may not become real.</div>
+          <div class="mt-6 text-xs text-white/50">Warning: Highly contagious</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT / SAY HI -->
+  <section id="contact" class="max-w-3xl mx-auto px-6 py-24 text-center">
+    <h2 class="section-header">Wanna chat with a Dragon?</h2>
+    <p class="mt-4 text-2xl text-white/70">I'm usually online at weird hours. Let's be chaotic together.</p>
+    
+    <div class="mt-10">
+      <a href="mailto:hello@reial.com" 
+         class="inline-flex items-center gap-x-3 px-10 py-4 rounded-3xl bg-white text-zinc-950 font-semibold text-lg hover:bg-white/90 active:scale-[0.985] transition-all">
+        <i class="fa-solid fa-envelope"></i>
+        <span>Say hi → hello@reial.com</span>
+      </a>
+    </div>
+    
+    <div class="mt-8 text-white/50 text-sm flex justify-center gap-x-6">
+      <a href="#" class="hover:text-white transition-colors">Instagram</a>
+      <a href="#" class="hover:text-white transition-colors">X / Twitter</a>
+      <a href="#" class="hover:text-white transition-colors">Wherever the vibes are</a>
+    </div>
+  </section>
+
+  <footer class="border-t border-white/10 py-8 text-center text-white/40 text-sm">
+    © 2026 Reial. Crafted with obsession.
+  </footer>
+
+  <script>
+    function initializeTailwind() {
+      // You can add custom Tailwind config here later if needed
+    }
+    
+    function toggleMobileMenu() {
+      const nav = document.querySelector('nav');
+      alert('Mobile menu would open here (we can build this next if you want)');
+    }
+    
+    // Easter egg: Press "B" to slightly change the background vibe
+    document.addEventListener('keydown', function(e) {
+      if (e.key.toLowerCase() === 'b') {
+        const hero = document.querySelector('section');
+        if (hero.style.background.includes('emerald')) {
+          hero.style.background = '';
+        } else {
+          hero.style.transition = 'background 800ms ease';
+          hero.style.background = 'linear-gradient(145deg, #052e16, #0a3d2a)';
+        }
+      }
+    });
+    
+    // Fun roar button for the Dragon
+    function roar() {
+      const hero = document.querySelector('section');
+      const originalBg = hero.style.background;
+      
+      // Temporary fiery Dragon mode
+      hero.style.transition = 'background 200ms ease';
+      hero.style.background = 'linear-gradient(145deg, #3f1f1f, #5c2a1f)';
+      
+      // Fun text flash
+      const originalText = document.querySelector('h1').innerHTML;
+      document.querySelector('h1').innerHTML = 'RAWRRR 🐉';
+      
+      setTimeout(() => {
+        hero.style.background = originalBg || '';
+        document.querySelector('h1').innerHTML = originalText;
+      }, 1200);
+      
+      // Optional: browser notification vibe
+      if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+    }
+    
+    // Make sure smooth scrolling works nicely on all devices
+    console.log('%c[Reial] Personal fun page is live 🐉  |  Dragon energy activated', 'color:#6366f1; font-size: 10px');
+    
+    initializeTailwind();
+  </script>
+</body>
+</html>
