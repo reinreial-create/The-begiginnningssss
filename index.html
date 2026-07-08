@@ -3,9 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reial • Welcome</title>
+  <title>R.Reial • Welcome</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&amp;family=Cinzel:wght@400;700&amp;display=swap" rel="stylesheet">
+  <!-- Three.js for WebGL fire particles & shaders -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
   <style>
     @keyframes blob {
       0%, 100% { transform: translate(0, 0) scale(1); }
@@ -32,6 +35,70 @@
       font-weight: 600;
       letter-spacing: -0.04em;
     }
+
+    /* Medieval font for name and titles */
+    .medieval-font {
+      font-family: 'UnifrakturCook', cursive;
+      letter-spacing: 2px;
+    }
+
+    h1, .section-header {
+      font-family: 'UnifrakturCook', cursive;
+      letter-spacing: 1.5px;
+    }
+
+    .logo-text {
+      font-family: 'UnifrakturCook', cursive;
+      letter-spacing: 1px;
+    }
+
+    /* Fire Particles */
+    .fire-particle {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: #ff6b00;
+      border-radius: 50%;
+      box-shadow: 
+        0 0 8px #ff6b00,
+        0 0 16px #ff9500,
+        0 0 24px #ff4500;
+      pointer-events: none;
+      animation: fire-float 1.2s ease-out forwards;
+      z-index: 20;
+    }
+
+    @keyframes fire-float {
+      0% {
+        transform: translateY(0) scale(1);
+        opacity: 0.9;
+      }
+      50% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-120px) scale(0.2);
+        opacity: 0;
+      }
+    }
+
+    /* Animated Lightning */
+    .lightning-flash {
+      position: absolute;
+      inset: 0;
+      background: rgba(200, 220, 255, 0.15);
+      pointer-events: none;
+      opacity: 0;
+      animation: lightning-strike 0.15s ease-out forwards;
+      z-index: 15;
+    }
+
+    @keyframes lightning-strike {
+      0% { opacity: 0.6; }
+      20% { opacity: 0.9; }
+      40% { opacity: 0.3; }
+      100% { opacity: 0; }
+    }
   </style>
 </head>
 <body class="bg-zinc-950 text-white font-sans">
@@ -43,7 +110,7 @@
         <div class="w-9 h-9 bg-white rounded-2xl flex items-center justify-center shadow-inner">
           <span class="text-zinc-950 font-bold text-3xl tracking-[-2px]">R</span>
         </div>
-        <span class="font-semibold text-2xl tracking-tighter">Reial</span>
+        <span class="logo-text font-semibold text-2xl tracking-tighter">R.Reial</span>
       </div>
       
       <div class="hidden md:flex items-center gap-x-9 text-sm font-medium">
@@ -67,18 +134,28 @@
   </nav>
 
   <!-- HERO + BEAUTIFUL BACKGROUND -->
-  <section class="relative min-h-[100dvh] flex items-center justify-center overflow-hidden pt-16">
+  <section class="relative min-h-[100dvh] flex items-center justify-center overflow-hidden pt-16 bg-cover bg-center bg-no-repeat" 
+           style="background-image: url('dragon-bg.jpg');">
     
-    <!-- BACKGROUND BASE -->
-    <div class="absolute inset-0 bg-zinc-950"></div>
+    <!-- Dark overlay for text readability -->
+    <div class="absolute inset-0 bg-black/55"></div>
     
-    <!-- GLOWING ORBS - This is your premium animated background -->
-    <div class="absolute top-[15%] -left-24 w-[520px] h-[520px] bg-indigo-600/25 rounded-full blur-[140px] blob"></div>
-    <div class="absolute top-[30%] -right-16 w-[480px] h-[480px] bg-violet-600/25 rounded-full blur-[120px] blob blob-delay-1"></div>
-    <div class="absolute bottom-[-80px] left-[25%] w-[620px] h-[340px] bg-cyan-500/15 rounded-full blur-[150px] blob blob-delay-2"></div>
+    <!-- GLOWING ORBS - Fire & Blood Dragon theme layered on top -->
+    <div class="absolute top-[10%] -left-32 w-[600px] h-[600px] bg-[#991b1b]/15 rounded-full blur-[160px] blob"></div>
+    <div class="absolute top-[25%] -right-20 w-[520px] h-[520px] bg-[#581c87]/20 rounded-full blur-[140px] blob blob-delay-1"></div>
+    <div class="absolute bottom-[-60px] left-[20%] w-[700px] h-[380px] bg-[#9a3412]/10 rounded-full blur-[170px] blob blob-delay-2"></div>
     
-    <!-- Subtle center atmospheric glow -->
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] bg-white/[0.035] rounded-full blur-[220px]"></div>
+    <!-- Extra atmospheric glow -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] bg-black/25 rounded-full blur-[220px]"></div>
+
+    <!-- Animated Lightning Flashes -->
+    <div id="lightning" class="absolute inset-0 pointer-events-none z-10"></div>
+
+    <!-- Fire Particles Container (over dragon mouth area) -->
+    <div id="fire-particles" class="absolute inset-0 pointer-events-none z-20"></div>
+
+    <!-- WebGL Fire Canvas (Three.js shaders) -->
+    <canvas id="webgl-fire" class="absolute inset-0 pointer-events-none z-30"></canvas>
 
     <!-- HERO CONTENT -->
     <div class="relative z-10 max-w-5xl mx-auto px-6 text-center">
@@ -89,7 +166,7 @@
       </div>
       
       <h1 class="section-header mb-4">
-        Hi, I'm Reial
+        Hi, I'm R.Reial
       </h1>
       
       <p class="max-w-lg mx-auto text-3xl text-white/80 mb-10 tracking-tight">
@@ -130,7 +207,7 @@
       </div>
       <div class="md:col-span-7 mt-8 md:mt-0">
         <div class="space-y-6 text-xl text-white/75 max-w-[42ch]">
-          <p>Hi, I'm Reial — a Dragon born in 1988. That means I'm stubborn, passionate, a little dramatic, and somehow always lucky. Classic Dragon behavior.</p>
+          <p>Hi, I'm R.Reial — a Dragon born in 1988. That means I'm stubborn, passionate, a little dramatic, and somehow always lucky. Classic Dragon behavior.</p>
           <p>I overthink everything, collect random hobbies like they're shiny objects, and genuinely believe the best ideas come at 3am. 80s kid energy mixed with eternal curiosity.</p>
         </div>
       </div>
@@ -197,7 +274,7 @@
   </section>
 
   <footer class="border-t border-white/10 py-8 text-center text-white/40 text-sm">
-    © 2026 Reial. Crafted with obsession.
+    © 2026 R.Reial. Crafted with obsession.
   </footer>
 
   <script>
@@ -244,11 +321,183 @@
       // Optional: browser notification vibe
       if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
     }
-    
+
+    // Create fire particles bursting from dragon mouth area
+    function createFireParticles() {
+      const container = document.getElementById('fire-particles');
+      if (!container) return;
+
+      // Create 18 particles
+      for (let i = 0; i < 18; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'fire-particle';
+        
+        // Position roughly where the dragon's mouth is (center-right area)
+        const left = 48 + Math.random() * 18; // around 48-66%
+        const top = 38 + Math.random() * 12;  // around 38-50%
+        
+        particle.style.left = `${left}%`;
+        particle.style.top = `${top}%`;
+        
+        // Random size variation
+        const size = 4 + Math.random() * 8;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        
+        // Random animation duration
+        particle.style.animationDuration = (0.8 + Math.random() * 0.9) + 's';
+        
+        container.appendChild(particle);
+        
+        // Remove after animation
+        setTimeout(() => {
+          if (particle.parentNode) particle.parentNode.removeChild(particle);
+        }, 2200);
+      }
+    }
+
+    // Animated lightning flashes
+    function triggerLightning() {
+      const lightningContainer = document.getElementById('lightning');
+      if (!lightningContainer) return;
+
+      const flash = document.createElement('div');
+      flash.className = 'lightning-flash';
+      lightningContainer.appendChild(flash);
+
+      setTimeout(() => {
+        if (flash.parentNode) flash.parentNode.removeChild(flash);
+      }, 400);
+    }
+
+    // Start the effects
+    function startDragonEffects() {
+      // Initial burst of fire particles
+      createFireParticles();
+      
+      // Keep spawning fire particles every 1.8 seconds
+      setInterval(() => {
+        createFireParticles();
+      }, 1800);
+
+      // Random lightning strikes
+      setInterval(() => {
+        if (Math.random() > 0.6) { // 40% chance
+          triggerLightning();
+        }
+      }, 4200);
+
+      // Start WebGL fire shader particles
+      initWebGLFire();
+    }
+
+    // WebGL Fire Particles using Three.js (shaders + particles)
+    let webglFireScene, webglFireCamera, webglFireRenderer, webglFireParticles;
+
+    function initWebGLFire() {
+      const canvas = document.getElementById('webgl-fire');
+      if (!canvas || typeof THREE === 'undefined') return;
+
+      // Renderer
+      webglFireRenderer = new THREE.WebGLRenderer({ 
+        canvas: canvas, 
+        alpha: true, 
+        antialias: true 
+      });
+      webglFireRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      webglFireRenderer.setSize(window.innerWidth, window.innerHeight);
+
+      // Scene & Camera
+      webglFireScene = new THREE.Scene();
+      webglFireCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      webglFireCamera.position.z = 5;
+
+      // Create fire particles (glowing orange/yellow)
+      const particleCount = 120;
+      const positions = new Float32Array(particleCount * 3);
+      const colors = new Float32Array(particleCount * 3);
+      const sizes = new Float32Array(particleCount);
+
+      for (let i = 0; i < particleCount * 3; i += 3) {
+        // Position around dragon mouth area (center-right)
+        positions[i] = (Math.random() - 0.5) * 3.5 + 1.2;
+        positions[i + 1] = (Math.random() - 0.5) * 2.5 - 0.5;
+        positions[i + 2] = (Math.random() - 0.5) * 1.5;
+
+        // Fire colors (orange to yellow)
+        const colorMix = Math.random();
+        colors[i] = 1.0;                    // R
+        colors[i + 1] = 0.4 + colorMix * 0.6; // G
+        colors[i + 2] = 0.1;                // B
+
+        sizes[i / 3] = 0.8 + Math.random() * 2.5;
+      }
+
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+      geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+      const material = new THREE.PointsMaterial({
+        size: 0.12,
+        vertexColors: true,
+        transparent: true,
+        opacity: 0.85,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      });
+
+      webglFireParticles = new THREE.Points(geometry, material);
+      webglFireScene.add(webglFireParticles);
+
+      // Handle resize
+      window.addEventListener('resize', () => {
+        webglFireCamera.aspect = window.innerWidth / window.innerHeight;
+        webglFireCamera.updateProjectionMatrix();
+        webglFireRenderer.setSize(window.innerWidth, window.innerHeight);
+      });
+
+      // Animation loop
+      function animateWebGLFire() {
+        requestAnimationFrame(animateWebGLFire);
+
+        if (webglFireParticles) {
+          const positions = webglFireParticles.geometry.attributes.position;
+          const sizesAttr = webglFireParticles.geometry.attributes.size;
+
+          for (let i = 0; i < positions.count; i++) {
+            // Rise upward (fire behavior)
+            positions.array[i * 3 + 1] += 0.018 + Math.random() * 0.012;
+
+            // Reset when too high
+            if (positions.array[i * 3 + 1] > 3.5) {
+              positions.array[i * 3 + 1] = -1.5;
+              positions.array[i * 3] = (Math.random() - 0.5) * 3.5 + 1.2;
+            }
+
+            // Flicker size
+            sizesAttr.array[i] = 0.8 + Math.sin(Date.now() * 0.008 + i) * 0.8 + Math.random() * 0.6;
+          }
+
+          positions.needsUpdate = true;
+          sizesAttr.needsUpdate = true;
+        }
+
+        webglFireRenderer.render(webglFireScene, webglFireCamera);
+      }
+
+      animateWebGLFire();
+    }
+
     // Make sure smooth scrolling works nicely on all devices
-    console.log('%c[Reial] Personal fun page is live 🐉  |  Dragon energy activated', 'color:#6366f1; font-size: 10px');
+    console.log('%c[R.Reial] Personal fun page is live 🐉  |  Dragon energy activated', 'color:#6366f1; font-size: 10px');
     
     initializeTailwind();
+    
+    // Start the fire + lightning effects when page loads
+    window.addEventListener('load', () => {
+      startDragonEffects();
+    });
   </script>
 </body>
 </html>
