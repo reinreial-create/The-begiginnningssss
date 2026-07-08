@@ -5,19 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reial</title>
     <meta name="description" content="Reial">
-    <link href="tailwind.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
-    
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-    
     <style>
         body {
             font-family: 'Inter', system_ui, sans-serif;
             background-image: 
-                linear-gradient(rgba(10, 10, 10, 0.78), rgba(10, 10, 10, 0.88)),
+                linear-gradient(rgba(10, 10, 10, 0.75), rgba(10, 10, 10, 0.85)),
                 url('9MGE6.jpg');
             background-size: cover;
             background-position: center;
@@ -28,270 +23,93 @@
         .font-display {
             font-family: 'Cinzel', 'Inter', serif;
             font-weight: 600;
-            letter-spacing: 1.5px;
+            letter-spacing: 2px;
         }
 
-        .chat-message {
-            animation: fadeIn 0.3s ease-out;
+        .dropdown {
+            position: relative;
+            display: inline-block;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: #18181b;
+            min-width: 220px;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            z-index: 100;
+            padding: 8px 0;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-content a {
+            color: #e4e4e7;
+            padding: 10px 20px;
+            text-decoration: none;
+            display: block;
+            font-size: 14px;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #27272a;
+            color: white;
         }
     </style>
 </head>
 <body class="bg-zinc-950 text-white">
-    <!-- Dragon Fire Particle Canvas -->
-    <canvas id="fire-canvas" class="fixed inset-0 pointer-events-none z-[5]"></canvas>
     
+    <!-- Fire Particle Canvas -->
+    <canvas id="fire-canvas" class="fixed inset-0 pointer-events-none z-[5]"></canvas>
+
     <!-- Nav -->
     <nav class="border-b border-white/10 bg-black/40 backdrop-blur-lg sticky top-0 z-50">
         <div class="max-w-screen-xl mx-auto px-8">
             <div class="flex items-center justify-between h-20">
                 <div class="flex items-center gap-x-3">
-                    <img src="dragon-logo.jpg" alt="Reial Logo" class="w-12 h-12 rounded-2xl object-cover border border-white/20">
+                    <img src="dragon-logo.jpg" alt="Reial Logo" class="w-11 h-11 rounded-2xl object-cover border border-white/20">
                     <span class="font-display text-2xl font-semibold tracking-tighter">Reial</span>
                 </div>
-                
-                <div class="flex items-center gap-x-3 text-sm">
-                    <button onclick="document.getElementById('gallery').scrollIntoView({ behavior: 'smooth' })" 
-                            class="px-5 py-2 rounded-2xl hover:bg-white/5 transition-colors">Gallery</button>
-                    <button onclick="showSignupModal()" 
-                            class="px-6 py-2 bg-white text-zinc-950 rounded-2xl font-medium hover:bg-zinc-100 transition-colors">Sign up</button>
+
+                <!-- Estonia Radio Dropdown -->
+                <div class="dropdown">
+                    <button class="flex items-center gap-x-2 px-5 py-2.5 rounded-2xl border border-white/20 hover:bg-white/5 transition-colors text-sm">
+                        <i class="fa-solid fa-broadcast-tower"></i>
+                        <span>Estonia Radio</span>
+                        <i class="fa-solid fa-chevron-down text-xs ml-1"></i>
+                    </button>
+                    
+                    <div class="dropdown-content">
+                        <a href="https://skyplus.ee" target="_blank">Sky Plus</a>
+                        <a href="https://www.elmar.ee" target="_blank">Raadio Elmar</a>
+                        <a href="https://www.powerhitradio.ee" target="_blank">Power Hit Radio</a>
+                        <a href="https://www.retrofm.ee" target="_blank">Retro FM</a>
+                        <a href="https://raadio2.err.ee" target="_blank">Raadio 2</a>
+                        <a href="https://vikerraadio.err.ee" target="_blank">Vikerraadio</a>
+                        <a href="https://klassikaraadio.err.ee" target="_blank">Klassikaraadio</a>
+                        <a href="https://www.starfm.ee" target="_blank">Star FM</a>
+                        <a href="https://www.radiomix.ee" target="_blank">Radio Mix</a>
+                    </div>
                 </div>
             </div>
         </div>
     </nav>
 
     <!-- Hero -->
-    <div class="max-w-screen-xl mx-auto px-8 pt-20 pb-16 text-center">
-        <div class="max-w-lg mx-auto">
-            <h1 class="font-display text-[92px] md:text-[110px] leading-none tracking-tighter font-semibold">Reial</h1>
-            
-            <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-                <button onclick="document.getElementById('gallery').scrollIntoView({ behavior: 'smooth' })" 
-                        class="px-10 h-14 border border-white/30 hover:bg-white/5 rounded-3xl text-base font-medium transition-all">
-                    Gallery
-                </button>
-                
-                <button onclick="showSignupModal()" 
-                        class="px-10 h-14 bg-white text-zinc-950 rounded-3xl text-base font-semibold hover:bg-zinc-100 transition-all">
-                    Sign up
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Gallery -->
-    <div id="gallery" class="max-w-screen-xl mx-auto px-8 pb-24">
-        <div class="flex items-center justify-between mb-8">
-            <div>
-                <span class="text-xs tracking-[2px] text-white/50">GALLERY</span>
-            </div>
-            <label class="cursor-pointer px-6 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-2xl text-sm font-medium flex items-center gap-x-2 transition-colors">
-                <i class="fa-solid fa-upload"></i>
-                <span>Upload Photo</span>
-                <input type="file" id="upload-input" accept="image/*" class="hidden" onchange="uploadPhoto(event)">
-            </label>
-        </div>
-
-        <div id="gallery-grid" class="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-5xl mx-auto">
-            <div class="group relative aspect-[4/3] rounded-3xl overflow-hidden cursor-pointer border border-white/10" onclick="showLightbox(0)">
-                <img src="gallery-1.jpg" class="gallery-img w-full h-full object-cover" alt="">
-                <div class="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors"></div>
-            </div>
-            <div class="group relative aspect-[4/3] rounded-3xl overflow-hidden cursor-pointer border border-white/10" onclick="showLightbox(1)">
-                <img src="gallery-2.jpg" class="gallery-img w-full h-full object-cover" alt="">
-                <div class="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors"></div>
-            </div>
-            <div class="group relative aspect-[4/3] rounded-3xl overflow-hidden cursor-pointer border border-white/10" onclick="showLightbox(2)">
-                <img src="gallery-3.jpg" class="gallery-img w-full h-full object-cover" alt="">
-                <div class="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Comment Box -->
-    <div class="max-w-screen-xl mx-auto px-8 pb-20">
-        <div class="max-w-xl mx-auto">
-            <div class="mb-6 text-center">
-                <span class="text-xs tracking-[2px] text-white/50">LEAVE A MESSAGE</span>
-                <h2 class="font-display text-3xl mt-2">Comment Box</h2>
-            </div>
-
-            <form id="comment-form" onsubmit="submitComment(event)" class="bg-zinc-900 border border-white/10 rounded-3xl p-8">
-                <input type="text" id="comment-name" placeholder="Your name" required
-                       class="w-full bg-zinc-950 border border-white/20 focus:border-white/40 px-5 py-3 rounded-2xl text-sm mb-4 outline-none">
-                
-                <textarea id="comment-text" placeholder="Write your comment..." rows="4" required
-                          class="w-full bg-zinc-950 border border-white/20 focus:border-white/40 px-5 py-3 rounded-2xl text-sm mb-4 outline-none resize-y"></textarea>
-                
-                <button type="submit" 
-                        class="w-full h-12 bg-white text-zinc-950 rounded-2xl font-semibold text-sm hover:bg-zinc-200 transition-colors">
-                    Post Comment
-                </button>
-            </form>
-
-            <div id="comment-success" class="hidden mt-4 text-center text-emerald-400 text-sm">
-                Thank you! Your comment has been received.
-            </div>
-        </div>
-    </div>
-
-    <!-- Sign up Modal -->
-    <div id="signup-modal" onclick="hideSignupModal()" class="hidden fixed inset-0 bg-black/80 z-[200] flex items-center justify-center p-6">
-        <div onclick="event.stopImmediatePropagation()" class="bg-zinc-900 border border-white/10 rounded-3xl p-8 w-full max-w-md">
-            <div class="flex justify-between items-start mb-6">
-                <div>
-                    <div class="font-semibold text-2xl">Sign up</div>
-                    <div class="text-white/60 text-sm mt-1">Be the first to know when something new drops</div>
-                </div>
-                <button onclick="hideSignupModal()" class="text-3xl leading-none text-white/50 hover:text-white">&times;</button>
-            </div>
-            
-            <form onsubmit="handleSignup(event)">
-                <input type="email" id="email-input" placeholder="your@email.com" value="reinreial@gmail.com" required
-                       class="w-full bg-zinc-950 border border-white/20 focus:border-white/40 px-5 py-4 rounded-2xl text-lg outline-none mb-4">
-                
-                <div id="email-error" class="text-red-400 text-sm mb-3 hidden">Please enter a valid email address.</div>
-                
-                <button type="submit" 
-                        class="w-full h-14 bg-white text-zinc-950 rounded-3xl font-semibold text-base hover:bg-zinc-100 transition-colors">
-                    Sign up
-                </button>
-            </form>
+    <div class="flex items-center justify-center min-h-[75vh]">
+        <div class="text-center px-8">
+            <h1 class="font-display text-[110px] md:text-[140px] leading-none tracking-tighter font-semibold">Reial</h1>
+            <p class="text-white/60 mt-4 text-lg">Estonia</p>
         </div>
     </div>
 
     <script>
-        // ==================== FIREBASE CONFIG ====================
-        // REPLACE THIS WITH YOUR OWN FIREBASE CONFIG
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT.firebaseapp.com",
-            databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-            projectId: "YOUR_PROJECT",
-            storageBucket: "YOUR_PROJECT.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-
-        // Chat removed as requested
-
-        // ==================== OTHER FUNCTIONS ====================
-        function uploadPhoto(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const galleryGrid = document.getElementById('gallery-grid');
-                const newDiv = document.createElement('div');
-                nouDiv.className = 'group relative aspect-[4/3] rounded-3xl overflow-hidden cursor-pointer border border-white/10';
-                newDiv.innerHTML = `
-                    <img src="${e.target.result}" class="gallery-img w-full h-full object-cover" alt="Uploaded">
-                    <div class="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors"></div>
-                `;
-                newDiv.onclick = () => showUploadedLightbox(e.target.result);
-                galleryGrid.appendChild(newDiv);
-            };
-            reader.readAsDataURL(file);
-            event.target.value = '';
-        }
-
-        function showUploadedLightbox(src) {
-            const lightbox = document.getElementById('lightbox');
-            document.getElementById('lightbox-image').src = src;
-            lightbox.classList.remove('hidden');
-            lightbox.classList.add('flex');
-        }
-
-        function showSignupModal() {
-            const modal = document.getElementById('signup-modal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
-        function hideSignupModal() {
-            const modal = document.getElementById('signup-modal');
-            modal.classList.remove('flex');
-            modal.classList.add('hidden');
-        }
-
-        function handleSignup(e) {
-            e.preventDefault();
-            
-            const emailInput = document.getElementById('email-input');
-            const errorDiv = document.getElementById('email-error');
-            
-            // Simple email validation
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            
-            if (!emailRegex.test(emailInput.value)) {
-                errorDiv.classList.remove('hidden');
-                emailInput.classList.add('border-red-400');
-                return;
-            }
-            
-            // Hide error if valid
-            errorDiv.classList.add('hidden');
-            emailInput.classList.remove('border-red-400');
-            
-            const modalContent = document.querySelector('#signup-modal > div');
-            modalContent.innerHTML = `
-                <div class="text-center py-8">
-                    <i class="fa-solid fa-check-circle text-5xl text-emerald-400 mb-6"></i>
-                    <div class="text-2xl font-semibold">Thank you!</div>
-                    <p class="text-white/60 mt-2">You're on the list.</p>
-                    <button onclick="hideSignupModal()" class="mt-8 px-8 h-12 border border-white/20 hover:bg-white/5 rounded-2xl text-sm">Close</button>
-                </div>
-            `;
-        }
-
-        function showLightbox(index) {
-            const images = ['gallery-1.jpg', 'gallery-2.jpg', 'gallery-3.jpg'];
-            const lightbox = document.getElementById('lightbox');
-            document.getElementById('lightbox-image').src = images[index];
-            lightbox.classList.remove('hidden');
-            lightbox.classList.add('flex');
-        }
-
-        function hideLightbox() {
-            const lightbox = document.getElementById('lightbox');
-            lightbox.classList.remove('flex');
-            lightbox.classList.add('hidden');
-        }
-
-        // Comment Box
-        function submitComment(e) {
-            e.preventDefault();
-            
-            const name = document.getElementById('comment-name').value;
-            const text = document.getElementById('comment-text').value;
-            const successDiv = document.getElementById('comment-success');
-            const form = document.getElementById('comment-form');
-
-            if (!name.trim() || !text.trim()) {
-                alert("Please fill in both name and comment.");
-                return;
-            }
-
-            form.style.display = 'none';
-            successDiv.classList.remove('hidden');
-
-            setTimeout(() => {
-                form.reset();
-                form.style.display = 'block';
-                successDiv.classList.add('hidden');
-            }, 5000);
-        }
-
-        // ==================== DRAGON FIRE PARTICLES ====================
+        // Dragon Fire Particles
         function initFireParticles() {
             const canvas = document.getElementById('fire-canvas');
             if (!canvas) return;
@@ -309,19 +127,18 @@
             class Particle {
                 constructor(type = 'fire') {
                     this.type = type;
-                    this.x = canvas.width * 0.65 + (Math.random() - 0.5) * 250;
-                    this.y = canvas.height * 0.52 + (Math.random() - 0.5) * 140;
+                    this.x = canvas.width * 0.65 + (Math.random() - 0.5) * 260;
+                    this.y = canvas.height * 0.52 + (Math.random() - 0.5) * 150;
 
                     if (type === 'fire') {
                         this.size = Math.random() * 5.5 + 3.5;
-                        this.speedY = Math.random() * -3.5 - 1.8;
-                        this.speedX = (Math.random() - 0.5) * 1.5;
+                        this.speedY = Math.random() * -3.6 - 1.9;
+                        this.speedX = (Math.random() - 0.5) * 1.6;
                         this.life = Math.random() * 48 + 38;
                         this.color = ['#ef4444', '#f87171', '#b91c1c'][Math.floor(Math.random() * 3)];
                     } else {
-                        // Smoke
                         this.size = Math.random() * 9 + 6;
-                        this.speedY = Math.random() * -1.6 - 0.7;
+                        this.speedY = Math.random() * -1.5 - 0.6;
                         this.speedX = (Math.random() - 0.5) * 0.9;
                         this.life = Math.random() * 90 + 70;
                         this.color = '#64748b';
@@ -358,7 +175,6 @@
                         ctx.arc(this.x, this.y, this.size * 2.6, 0, Math.PI * 2);
                         ctx.fill();
                     } else {
-                        // Smoke
                         ctx.globalAlpha = alpha * 0.28;
                         ctx.fillStyle = this.color;
                         ctx.beginPath();
@@ -371,7 +187,6 @@
 
             function createParticles(count) {
                 for (let i = 0; i < count; i++) {
-                    // 70% fire, 30% smoke
                     const type = Math.random() < 0.7 ? 'fire' : 'smoke';
                     particles.push(new Particle(type));
                 }
