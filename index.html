@@ -12,10 +12,11 @@
         body {
             font-family: 'Inter', system_ui, sans-serif;
             background-image: 
-                linear-gradient(rgba(10, 10, 10, 0.75), rgba(10, 10, 10, 0.85)),
-                url('9MGE6.jpg');
+                linear-gradient(rgba(10, 10, 10, 0.65), rgba(10, 10, 10, 0.78)),
+                url('new-dragon-bg.jpg');
             background-size: cover;
             background-position: center;
+            background-repeat: no-repeat;
             background-attachment: fixed;
             background-color: #0a0a0a;
         }
@@ -58,21 +59,18 @@
 
         .dropdown-content a:hover {
             background-color: #27272a;
-            color: white;
+            color: #facc15;
         }
     </style>
 </head>
 <body class="bg-zinc-950 text-white">
     
-    <!-- Fire Particle Canvas -->
-    <canvas id="fire-canvas" class="fixed inset-0 pointer-events-none z-[5]"></canvas>
-
     <!-- Nav -->
     <nav class="border-b border-white/10 bg-black/40 backdrop-blur-lg sticky top-0 z-50">
         <div class="max-w-screen-xl mx-auto px-8">
             <div class="flex items-center justify-between h-20">
                 <div class="flex items-center gap-x-3">
-                    <img src="dragon-logo.jpg" alt="Reial Logo" class="w-11 h-11 rounded-2xl object-cover border border-white/20">
+                    <img src="dragon-logo.jpg" alt="Reial Logo" class="w-12 h-12 rounded-2xl object-cover border border-white/20">
                     <span class="font-display text-2xl font-semibold tracking-tighter">Reial</span>
                 </div>
 
@@ -85,15 +83,15 @@
                     </button>
                     
                     <div class="dropdown-content">
-                        <a href="https://skyplus.ee" target="_blank">Sky Plus</a>
-                        <a href="https://www.elmar.ee" target="_blank">Raadio Elmar</a>
-                        <a href="https://www.powerhitradio.ee" target="_blank">Power Hit Radio</a>
-                        <a href="https://www.retrofm.ee" target="_blank">Retro FM</a>
-                        <a href="https://raadio2.err.ee" target="_blank">Raadio 2</a>
-                        <a href="https://vikerraadio.err.ee" target="_blank">Vikerraadio</a>
-                        <a href="https://klassikaraadio.err.ee" target="_blank">Klassikaraadio</a>
-                        <a href="https://www.starfm.ee" target="_blank">Star FM</a>
-                        <a href="https://www.radiomix.ee" target="_blank">Radio Mix</a>
+                        <a href="https://sky.babahhcdn.com/live.mp3" target="_blank">Sky Plus</a>
+                        <a href="https://elmar.babahhcdn.com/live.mp3" target="_blank">Raadio Elmar</a>
+                        <a href="https://power.babahhcdn.com/live.mp3" target="_blank">Power Hit Radio</a>
+                        <a href="https://retro.babahhcdn.com/live.mp3" target="_blank">Retro FM</a>
+                        <a href="https://r2.err.ee/live" target="_blank">Raadio 2</a>
+                        <a href="https://vikerraadio.err.ee/live" target="_blank">Vikerraadio</a>
+                        <a href="https://klassikaraadio.err.ee/live" target="_blank">Klassikaraadio</a>
+                        <a href="https://starfm.babahhcdn.com/live.mp3" target="_blank">Star FM</a>
+                        <a href="https://radiomix.babahhcdn.com/live.mp3" target="_blank">Radio Mix</a>
                     </div>
                 </div>
             </div>
@@ -101,123 +99,12 @@
     </nav>
 
     <!-- Hero -->
-    <div class="flex items-center justify-center min-h-[75vh]">
+    <div class="flex items-center justify-center min-h-[80vh]">
         <div class="text-center px-8">
-            <h1 class="font-display text-[110px] md:text-[140px] leading-none tracking-tighter font-semibold">Reial</h1>
-            <p class="text-white/60 mt-4 text-lg">Estonia</p>
+            <h1 class="font-display text-[120px] md:text-[150px] leading-none tracking-tighter font-semibold">Reial</h1>
+            <p class="text-white/60 mt-6 text-xl">Estonia</p>
         </div>
     </div>
 
-    <script>
-        // Dragon Fire Particles
-        function initFireParticles() {
-            const canvas = document.getElementById('fire-canvas');
-            if (!canvas) return;
-
-            const ctx = canvas.getContext('2d');
-            let particles = [];
-
-            function resizeCanvas() {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-            }
-            window.addEventListener('resize', resizeCanvas);
-            resizeCanvas();
-
-            class Particle {
-                constructor(type = 'fire') {
-                    this.type = type;
-                    this.x = canvas.width * 0.65 + (Math.random() - 0.5) * 260;
-                    this.y = canvas.height * 0.52 + (Math.random() - 0.5) * 150;
-
-                    if (type === 'fire') {
-                        this.size = Math.random() * 5.5 + 3.5;
-                        this.speedY = Math.random() * -3.6 - 1.9;
-                        this.speedX = (Math.random() - 0.5) * 1.6;
-                        this.life = Math.random() * 48 + 38;
-                        this.color = ['#ef4444', '#f87171', '#b91c1c'][Math.floor(Math.random() * 3)];
-                    } else {
-                        this.size = Math.random() * 9 + 6;
-                        this.speedY = Math.random() * -1.5 - 0.6;
-                        this.speedX = (Math.random() - 0.5) * 0.9;
-                        this.life = Math.random() * 90 + 70;
-                        this.color = '#64748b';
-                    }
-                    this.maxLife = this.life;
-                }
-
-                update() {
-                    this.x += this.speedX;
-                    this.y += this.speedY;
-                    this.life--;
-
-                    if (this.type === 'fire') {
-                        this.size *= 0.975;
-                    } else {
-                        this.size *= 0.982;
-                        this.speedX *= 0.994;
-                    }
-                }
-
-                draw() {
-                    const alpha = this.life / this.maxLife;
-                    ctx.save();
-
-                    if (this.type === 'fire') {
-                        ctx.globalAlpha = alpha * 0.9;
-                        ctx.fillStyle = this.color;
-                        ctx.beginPath();
-                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                        ctx.fill();
-
-                        ctx.globalAlpha = alpha * 0.35;
-                        ctx.beginPath();
-                        ctx.arc(this.x, this.y, this.size * 2.6, 0, Math.PI * 2);
-                        ctx.fill();
-                    } else {
-                        ctx.globalAlpha = alpha * 0.28;
-                        ctx.fillStyle = this.color;
-                        ctx.beginPath();
-                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                        ctx.fill();
-                    }
-                    ctx.restore();
-                }
-            }
-
-            function createParticles(count) {
-                for (let i = 0; i < count; i++) {
-                    const type = Math.random() < 0.7 ? 'fire' : 'smoke';
-                    particles.push(new Particle(type));
-                }
-            }
-
-            function animate() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                if (Math.random() < 0.7) {
-                    createParticles(3);
-                }
-
-                for (let i = particles.length - 1; i >= 0; i--) {
-                    const p = particles[i];
-                    p.update();
-                    p.draw();
-
-                    if (p.life <= 0 || p.size < 0.4) {
-                        particles.splice(i, 1);
-                    }
-                }
-
-                requestAnimationFrame(animate);
-            }
-
-            animate();
-        }
-
-        window.addEventListener('load', () => {
-            setTimeout(initFireParticles, 600);
-        });
-    </script>
 </body>
 </html>
