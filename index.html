@@ -47,12 +47,6 @@
                 <span class="font-display text-2xl font-semibold tracking-tighter">Reial</span>
             </div>
             
-            <div class="flex items-center gap-x-3 text-sm">
-                <button onclick="document.getElementById('gallery').scrollIntoView({ behavior: 'smooth' })" 
-                        class="px-5 py-2 rounded-2xl hover:bg-white/5 transition-colors">Gallery</button>
-                <button onclick="showSignupModal()" 
-                        class="px-6 py-2 bg-white text-zinc-950 rounded-2xl font-medium hover:bg-zinc-100 transition-colors">Sign up</button>
-            </div>
         </div>
     </nav>
 
@@ -60,114 +54,12 @@
     <div class="max-w-screen-xl mx-auto px-8 pt-24 pb-20 text-center">
         <div class="max-w-md mx-auto">
             <h1 class="font-display text-[92px] md:text-[110px] leading-none tracking-tighter font-semibold">Reial</h1>
-            
-            <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-                <button onclick="document.getElementById('gallery').scrollIntoView({ behavior: 'smooth' })" 
-                        class="px-10 h-14 border border-white/30 hover:bg-white/5 rounded-3xl text-base font-medium transition-all flex items-center justify-center gap-x-2">
-                    <span>Gallery</span>
-                </button>
-                
-                <button onclick="showSignupModal()" 
-                        class="px-10 h-14 bg-white text-zinc-950 rounded-3xl text-base font-semibold hover:bg-zinc-100 transition-all flex items-center justify-center gap-x-2">
-                    <span>Sign up</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Gallery -->
-    <div id="gallery" class="max-w-screen-xl mx-auto px-8 pb-24">
-        <div class="mb-8 text-center">
-            <span class="text-xs tracking-[2px] text-white/50">GALLERY</span>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-5xl mx-auto">
-            
-            <div onclick="showLightbox(0)" class="group relative aspect-[4/3] rounded-3xl overflow-hidden cursor-pointer border border-white/10">
-                <img src="gallery-1.jpg" class="gallery-img w-full h-full object-cover" alt="">
-                <div class="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors"></div>
-            </div>
-            
-            <div onclick="showLightbox(1)" class="group relative aspect-[4/3] rounded-3xl overflow-hidden cursor-pointer border border-white/10">
-                <img src="gallery-2.jpg" class="gallery-img w-full h-full object-cover" alt="">
-                <div class="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors"></div>
-            </div>
-            
-            <div onclick="showLightbox(2)" class="group relative aspect-[4/3] rounded-3xl overflow-hidden cursor-pointer border border-white/10">
-                <img src="gallery-3.jpg" class="gallery-img w-full h-full object-cover" alt="">
-                <div class="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors"></div>
-            </div>
-            
-        </div>
-    </div>
-
-    <!-- Sign up Modal -->
-    <div id="signup-modal" onclick="hideSignupModal()" class="hidden fixed inset-0 bg-black/80 z-[200] flex items-center justify-center p-6">
-        <div onclick="event.stopImmediatePropagation()" class="bg-zinc-900 border border-white/10 rounded-3xl p-8 w-full max-w-md">
-            <div class="flex justify-between items-start mb-6">
-                <div>
-                    <div class="font-semibold text-2xl">Sign up</div>
-                    <div class="text-white/60 text-sm mt-1">Be the first to know when the shop opens</div>
-                </div>
-                <button onclick="hideSignupModal()" class="text-3xl leading-none text-white/50 hover:text-white">&times;</button>
-            </div>
-            
-            <form onsubmit="handleSignup(event)">
-                <input type="email" id="email-input" placeholder="your@email.com" value="hello@reial.org" required
-                       class="w-full bg-zinc-950 border border-white/20 focus:border-white/40 px-5 py-4 rounded-2xl text-lg outline-none mb-4">
-                
-                <button type="submit" 
-                        class="w-full h-14 bg-white text-zinc-950 rounded-3xl font-semibold text-base hover:bg-zinc-100 transition-colors">
-                    Sign up for early access
-                </button>
-            </form>
-            
-            <p class="text-center text-xs text-white/40 mt-6">We’ll only email you when the shop launches.</p>
-        </div>
-    </div>
-
-    <!-- Lightbox -->
-    <div id="lightbox" onclick="hideLightbox()" class="hidden fixed inset-0 bg-black/95 z-[300] flex items-center justify-center p-4">
-        <div onclick="event.stopImmediatePropagation()" class="max-w-5xl w-full">
-            <div class="flex justify-end mb-4">
-                <button onclick="hideLightbox()" class="text-white/60 hover:text-white text-4xl leading-none">&times;</button>
-            </div>
-            <img id="lightbox-image" class="w-full max-h-[82vh] object-contain rounded-3xl" alt="">
         </div>
     </div>
 
     <script>
-        const galleryItems = [
-            { src: "gallery-1.jpg" },
-            { src: "gallery-2.jpg" },
-            { src: "gallery-3.jpg" }
-        ];
-
-        let currentIndex = 0;
-
-        function showLightbox(index) {
-            currentIndex = index;
-            document.getElementById('lightbox-image').src = galleryItems[index].src;
-            const lb = document.getElementById('lightbox');
-            lb.classList.remove('hidden');
-            lb.classList.add('flex');
-        }
-
-        function hideLightbox() {
-            const lb = document.getElementById('lightbox');
-            lb.classList.remove('flex');
-            lb.classList.add('hidden');
-        }
-
-        function showSignupModal() {
-            const modal = document.getElementById('signup-modal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            setTimeout(() => {
-                document.getElementById('email-input').focus();
-                document.getElementById('email-input').select();
-            }, 100);
-        }
+        // Minimal clean version
+    </script>
 
         function hideSignupModal() {
             const modal = document.getElementById('signup-modal');
