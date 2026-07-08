@@ -8,87 +8,272 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
     <style>
         body {
             font-family: 'Inter', system_ui, sans-serif;
             background-image: 
-                linear-gradient(rgba(10, 10, 10, 0.75), rgba(10, 10, 10, 0.85)),
+                linear-gradient(rgba(10, 10, 10, 0.78), rgba(10, 10, 10, 0.88)),
                 url('9MGE6.jpg');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
             background-color: #0a0a0a;
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* Breathing Golden Flames Effect */
-        body::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(
-                circle at 72% 58%,
-                rgba(250, 204, 21, 0.22) 0%,
-                rgba(251, 191, 36, 0.12) 28%,
-                transparent 60%
-            );
-            animation: breatheFlames 8s ease-in-out infinite;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        @keyframes breatheFlames {
-            0%, 100% {
-                opacity: 0.6;
-                transform: scale(1);
-            }
-            50% {
-                opacity: 1;
-                transform: scale(1.12);
-            }
         }
         
         .font-display {
             font-family: 'Cinzel', 'Inter', serif;
             font-weight: 600;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
         }
 
-        .gallery-img {
-            transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+        .chat-message {
+            animation: fadeIn 0.3s ease-out;
         }
-        
-        .gallery-img:hover {
-            transform: scale(1.05);
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body class="bg-zinc-950 text-white">
     
-    <!-- Minimal Nav -->
-    <nav class="border-b border-white/10">
-        <div class="max-w-screen-xl mx-auto px-8 h-20 flex items-center justify-between">
-            <div class="flex items-center gap-x-3">
-                <div class="w-8 h-8 bg-white rounded-2xl flex items-center justify-center">
-                    <span class="font-display text-xl font-semibold tracking-tighter text-zinc-950">R</span>
+    <!-- Nav -->
+    <nav class="border-b border-white/10 bg-black/40 backdrop-blur-lg sticky top-0 z-50">
+        <div class="max-w-screen-xl mx-auto px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center gap-x-3">
+                    <img src="dragon-logo.jpg" alt="Reial Logo" class="w-9 h-9 rounded-2xl object-cover border border-white/20">
+                    <span class="font-display text-2xl font-semibold tracking-tighter">Reial</span>
                 </div>
-                <span class="font-display text-2xl font-semibold tracking-tighter">Reial</span>
+                
+                <div class="flex items-center gap-x-3 text-sm">
+                    <button onclick="document.getElementById('gallery').scrollIntoView({ behavior: 'smooth' })" 
+                            class="px-5 py-2 rounded-2xl hover:bg-white/5 transition-colors">Gallery</button>
+                    <button onclick="showSignupModal()" 
+                            class="px-6 py-2 bg-white text-zinc-950 rounded-2xl font-medium hover:bg-zinc-100 transition-colors">Sign up</button>
+                </div>
             </div>
-            
         </div>
     </nav>
 
-    <!-- Hero / Name -->
-    <div class="max-w-screen-xl mx-auto px-8 pt-24 pb-20 text-center">
-        <div class="max-w-md mx-auto">
+    <!-- Hero -->
+    <div class="max-w-screen-xl mx-auto px-8 pt-20 pb-16 text-center">
+        <div class="max-w-lg mx-auto">
             <h1 class="font-display text-[92px] md:text-[110px] leading-none tracking-tighter font-semibold">Reial</h1>
+            
+            <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+                <button onclick="document.getElementById('gallery').scrollIntoView({ behavior: 'smooth' })" 
+                        class="px-10 h-14 border border-white/30 hover:bg-white/5 rounded-3xl text-base font-medium transition-all">
+                    Gallery
+                </button>
+                
+                <button onclick="showSignupModal()" 
+                        class="px-10 h-14 bg-white text-zinc-950 rounded-3xl text-base font-semibold hover:bg-zinc-100 transition-all">
+                    Sign up
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gallery -->
+    <div id="gallery" class="max-w-screen-xl mx-auto px-8 pb-24">
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <span class="text-xs tracking-[2px] text-white/50">GALLERY</span>
+            </div>
+            <label class="cursor-pointer px-6 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-2xl text-sm font-medium flex items-center gap-x-2 transition-colors">
+                <i class="fa-solid fa-upload"></i>
+                <span>Upload Photo</span>
+                <input type="file" id="upload-input" accept="image/*" class="hidden" onchange="uploadPhoto(event)">
+            </label>
+        </div>
+
+        <div id="gallery-grid" class="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-5xl mx-auto">
+            <div class="group relative aspect-[4/3] rounded-3xl overflow-hidden cursor-pointer border border-white/10" onclick="showLightbox(0)">
+                <img src="gallery-1.jpg" class="gallery-img w-full h-full object-cover" alt="">
+                <div class="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors"></div>
+            </div>
+            <div class="group relative aspect-[4/3] rounded-3xl overflow-hidden cursor-pointer border border-white/10" onclick="showLightbox(1)">
+                <img src="gallery-2.jpg" class="gallery-img w-full h-full object-cover" alt="">
+                <div class="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors"></div>
+            </div>
+            <div class="group relative aspect-[4/3] rounded-3xl overflow-hidden cursor-pointer border border-white/10" onclick="showLightbox(2)">
+                <img src="gallery-3.jpg" class="gallery-img w-full h-full object-cover" alt="">
+                <div class="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Room -->
+    <div class="max-w-screen-xl mx-auto px-8 pb-20">
+        <div class="max-w-2xl mx-auto">
+            <div class="mb-6 text-center">
+                <span class="text-xs tracking-[2px] text-white/50">THE HALL</span>
+                <h2 class="font-display text-4xl mt-2">Chat Room</h2>
+                <p class="text-white/60 text-sm mt-1">Real-time public chat • Powered by Firebase</p>
+            </div>
+
+            <div class="bg-zinc-900 border border-white/10 rounded-3xl overflow-hidden">
+                
+                <!-- Messages -->
+                <div id="chat-messages" class="h-96 overflow-y-auto p-6 space-y-4 bg-black/40 text-sm">
+                    <!-- Messages loaded from Firebase -->
+                </div>
+
+                <!-- Input -->
+                <div class="p-4 border-t border-white/10 bg-zinc-950 flex gap-3">
+                    <input id="chat-input" type="text" placeholder="Type your message..." 
+                           class="flex-1 bg-zinc-900 border border-white/20 focus:border-white/40 px-5 py-3 rounded-2xl text-sm outline-none"
+                           onkeypress="if(event.key === 'Enter') sendChatMessage()">
+                    <button onclick="sendChatMessage()" 
+                            class="px-6 bg-white text-zinc-950 rounded-2xl font-semibold hover:bg-zinc-200 transition-colors">
+                        Send
+                    </button>
+                </div>
+            </div>
+            
+            <p class="text-center text-xs text-white/40 mt-4">Messages are public and saved in real-time.</p>
+        </div>
+    </div>
+
+    <!-- Sign up Modal -->
+    <div id="signup-modal" onclick="hideSignupModal()" class="hidden fixed inset-0 bg-black/80 z-[200] flex items-center justify-center p-6">
+        <div onclick="event.stopImmediatePropagation()" class="bg-zinc-900 border border-white/10 rounded-3xl p-8 w-full max-w-md">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <div class="font-semibold text-2xl">Sign up</div>
+                    <div class="text-white/60 text-sm mt-1">Be the first to know when something new drops</div>
+                </div>
+                <button onclick="hideSignupModal()" class="text-3xl leading-none text-white/50 hover:text-white">&times;</button>
+            </div>
+            
+            <form onsubmit="handleSignup(event)">
+                <input type="email" id="email-input" placeholder="your@email.com" required
+                       class="w-full bg-zinc-950 border border-white/20 focus:border-white/40 px-5 py-4 rounded-2xl text-lg outline-none mb-4">
+                
+                <button type="submit" 
+                        class="w-full h-14 bg-white text-zinc-950 rounded-3xl font-semibold text-base hover:bg-zinc-100 transition-colors">
+                    Sign up
+                </button>
+            </form>
         </div>
     </div>
 
     <script>
-        // Minimal clean version
-    </script>
+        // ==================== FIREBASE CONFIG ====================
+        // REPLACE THIS WITH YOUR OWN FIREBASE CONFIG
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+            projectId: "YOUR_PROJECT",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // ==================== CHAT ROOM ====================
+        let username = localStorage.getItem('reial_username') || '';
+
+        function askForUsername() {
+            if (!username) {
+                username = prompt("Enter your name for the chat:") || "Anonymous";
+                localStorage.setItem('reial_username', username);
+            }
+        }
+
+        function loadChatMessages() {
+            const messagesDiv = document.getElementById('chat-messages');
+            const messagesRef = database.ref('chat_messages');
+
+            messagesRef.on('child_added', (snapshot) => {
+                const message = snapshot.val();
+                displayMessage(message);
+            });
+        }
+
+        function displayMessage(message) {
+            const messagesDiv = document.getElementById('chat-messages');
+            const div = document.createElement('div');
+            div.className = 'flex gap-3 chat-message';
+            div.innerHTML = `
+                <div class="w-8 h-8 bg-white/10 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold">
+                    ${message.username ? message.username[0].toUpperCase() : 'U'}
+                </div>
+                <div class="flex-1">
+                    <div class="flex items-baseline gap-2">
+                        <span class="font-semibold text-white">${message.username || 'Anonymous'}</span>
+                        <span class="text-white/50 text-xs">${message.time}</span>
+                    </div>
+                    <div class="text-white">${message.text}</div>
+                </div>
+            `;
+            messagesDiv.appendChild(div);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            if (!input.value.trim()) return;
+
+            if (!username) {
+                askForUsername();
+            }
+
+            const messagesRef = database.ref('chat_messages');
+            
+            messagesRef.push({
+                username: username,
+                text: input.value.trim(),
+                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+            });
+
+            input.value = '';
+        }
+
+        // ==================== OTHER FUNCTIONS ====================
+        function uploadPhoto(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const galleryGrid = document.getElementById('gallery-grid');
+                const newDiv = document.createElement('div');
+                nouDiv.className = 'group relative aspect-[4/3] rounded-3xl overflow-hidden cursor-pointer border border-white/10';
+                newDiv.innerHTML = `
+                    <img src="${e.target.result}" class="gallery-img w-full h-full object-cover" alt="Uploaded">
+                    <div class="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors"></div>
+                `;
+                newDiv.onclick = () => showUploadedLightbox(e.target.result);
+                galleryGrid.appendChild(newDiv);
+            };
+            reader.readAsDataURL(file);
+            event.target.value = '';
+        }
+
+        function showUploadedLightbox(src) {
+            const lightbox = document.getElementById('lightbox');
+            document.getElementById('lightbox-image').src = src;
+            lightbox.classList.remove('hidden');
+            lightbox.classList.add('flex');
+        }
+
+        function showSignupModal() {
+            const modal = document.getElementById('signup-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
 
         function hideSignupModal() {
             const modal = document.getElementById('signup-modal');
@@ -98,58 +283,46 @@
 
         function handleSignup(e) {
             e.preventDefault();
-            const email = document.getElementById('email-input').value;
-            
             const modalContent = document.querySelector('#signup-modal > div');
             modalContent.innerHTML = `
                 <div class="text-center py-8">
                     <i class="fa-solid fa-check-circle text-5xl text-emerald-400 mb-6"></i>
-                    <div class="text-2xl font-semibold">Thank you</div>
-                    <p class="text-white/60 mt-2">You’re on the list. We’ll email you when the shop opens.</p>
-                    
-                    <button onclick="hideSignupModal()" 
-                            class="mt-8 px-8 h-12 border border-white/20 hover:bg-white/5 rounded-2xl text-sm">
-                        Close
-                    </button>
+                    <div class="text-2xl font-semibold">Thank you!</div>
+                    <p class="text-white/60 mt-2">You're on the list.</p>
+                    <button onclick="hideSignupModal()" class="mt-8 px-8 h-12 border border-white/20 hover:bg-white/5 rounded-2xl text-sm">Close</button>
                 </div>
             `;
-            
-            console.log('New signup:', email);
         }
 
-        document.addEventListener('keydown', function(e) {
+        function showLightbox(index) {
+            const images = ['gallery-1.jpg', 'gallery-2.jpg', 'gallery-3.jpg'];
             const lightbox = document.getElementById('lightbox');
-            if (lightbox.classList.contains('flex')) {
-                if (e.key === 'Escape') hideLightbox();
-                if (e.key === 'ArrowRight') {
-                    currentIndex = (currentIndex + 1) % galleryItems.length;
-                    document.getElementById('lightbox-image').src = galleryItems[currentIndex].src;
-                }
-                if (e.key === 'ArrowLeft') {
-                    currentIndex = (currentIndex - 1 + galleryItems.length) % galleryItems.length;
-                    document.getElementById('lightbox-image').src = galleryItems[currentIndex].src;
-                }
-            }
-            
-            if (e.key === 'Escape') {
-                const signup = document.getElementById('signup-modal');
-                if (signup.classList.contains('flex')) hideSignupModal();
-            }
-        });
+            document.getElementById('lightbox-image').src = images[index];
+            lightbox.classList.remove('hidden');
+            lightbox.classList.add('flex');
+        }
 
-        function init() {
-            tailwind.config = {
-                theme: {
-                    extend: {
-                        fontFamily: {
-                            'display': ['Space Grotesk', 'Inter', 'system-ui', 'sans-serif']
-                        }
+        function hideLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.classList.remove('flex');
+            lightbox.classList.add('hidden');
+        }
+
+        // Initialize everything
+        window.onload = function() {
+            // Load chat messages from Firebase
+            loadChatMessages();
+            
+            // Ask for username on first visit
+            setTimeout(() => {
+                if (!localStorage.getItem('reial_username')) {
+                    const name = prompt("Enter your name for the chat:");
+                    if (name) {
+                        localStorage.setItem('reial_username', name);
                     }
                 }
-            };
+            }, 2000);
         }
-        
-        window.onload = init;
     </script>
 </body>
 </html>
