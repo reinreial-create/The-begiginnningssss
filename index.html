@@ -18,6 +18,35 @@
             background-position: center;
             background-attachment: fixed;
             background-color: #0a0a0a;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Breathing Flames Effect */
+        body::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(
+                circle at 72% 58%,
+                rgba(255, 120, 30, 0.18) 0%,
+                rgba(255, 80, 20, 0.08) 25%,
+                transparent 55%
+            );
+            animation: breatheFlames 8s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes breatheFlames {
+            0%, 100% {
+                opacity: 0.6;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.12);
+            }
         }
         
         .font-display {
