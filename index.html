@@ -7,8 +7,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&amp;family=Cinzel:wght@400;700&amp;display=swap" rel="stylesheet">
-  <!-- Three.js for WebGL fire particles & shaders -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
   <style>
     @keyframes blob {
       0%, 100% { transform: translate(0, 0) scale(1); }
@@ -52,32 +50,41 @@
       letter-spacing: 1px;
     }
 
+    .dragon-crest-image {
+      width: 2.25rem;
+      height: 2.25rem;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 1px solid rgba(248, 113, 113, 0.65);
+      box-shadow: 0 0 15px rgba(239, 68, 68, 0.65);
+    }
+
     /* Fire Particles */
     .fire-particle {
       position: absolute;
-      width: 6px;
-      height: 6px;
-      background: #ff6b00;
-      border-radius: 50%;
-      box-shadow: 
-        0 0 8px #ff6b00,
-        0 0 16px #ff9500,
-        0 0 24px #ff4500;
+      width: var(--flame-size, 16px);
+      height: calc(var(--flame-size, 16px) * 1.85);
+      border-radius: 55% 45% 58% 42% / 68% 62% 38% 32%;
+      background: radial-gradient(ellipse at 50% 76%, #fff8b7 0 10%, #ffd24d 25%, #ff7518 51%, #d51f09 72%, transparent 74%);
+      box-shadow: 0 0 10px #ff9d24, 0 0 24px rgba(255, 77, 12, 0.72), 0 0 44px rgba(234, 50, 8, 0.35);
+      filter: blur(.18px);
       pointer-events: none;
-      animation: fire-float 1.2s ease-out forwards;
+      animation: fire-float var(--flame-duration, 1.7s) cubic-bezier(.14,.64,.28,1) forwards;
       z-index: 20;
     }
 
     @keyframes fire-float {
       0% {
-        transform: translateY(0) scale(1);
-        opacity: 0.9;
+        transform: translate(0, 0) rotate(25deg) scale(.45);
+        opacity: 0;
       }
-      50% {
-        opacity: 1;
+      18% { opacity: .95; }
+      60% {
+        transform: translate(var(--flame-drift, 38px), -52px) rotate(-12deg) scale(1);
+        opacity: .88;
       }
       100% {
-        transform: translateY(-120px) scale(0.2);
+        transform: translate(calc(var(--flame-drift, 38px) * 1.5), -128px) rotate(-25deg) scale(.16);
         opacity: 0;
       }
     }
@@ -102,13 +109,14 @@
   </style>
 </head>
 <body class="bg-zinc-950 text-white font-sans">
+  <svg aria-hidden="true" class="hidden"><symbol id="dragon-crest-symbol" viewBox="0 0 64 64"><path d="M32 5c-6 2-10 8-10 15 0 4 2 8 4 11-5-3-10-3-14 0-4 3-5 8-3 12 2 4 6 6 10 6-2 4-1 8 2 11 4 3 9 3 12-1 3 4 8 4 12 1 3-3 4-7 2-11 4 0 8-2 10-6 2-4 1-9-3-12-4-3-9-3-14 0 2-3 4-7 4-11 0-7-4-13-10-15ZM21 38c-2 2-6 2-8 0-1-1-1-3 0-4 2-2 5-2 8 0l3 3-3 1Zm22 0-3-1 3-3c3-2 6-2 8 0 1 1 1 3 0 4-2 2-6 2-8 0ZM32 47c-3-2-5-5-5-9 0-4 2-7 5-9 3 2 5 5 5 9 0 4-2 7-5 9Z"/></symbol></svg>
   
   <!-- NAV -->
   <nav class="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-zinc-950/90 backdrop-blur-xl">
     <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
       <div class="flex items-center gap-x-3">
         <div class="w-9 h-9 bg-white rounded-2xl flex items-center justify-center shadow-inner">
-          <span class="text-zinc-950 font-bold text-3xl tracking-[-2px]">R</span>
+          <img src="targaryen-crest.png" class="w-full h-full object-cover rounded-2xl" alt="Three-headed dragon crest">
         </div>
         <span class="logo-text font-semibold text-2xl tracking-tighter">R.Reial</span>
       </div>
@@ -126,9 +134,16 @@
         </button>
         
         <!-- Mobile menu -->
-        <button class="md:hidden w-10 h-10 flex items-center justify-center text-xl" onclick="toggleMobileMenu()">
+        <button class="md:hidden w-10 h-10 flex items-center justify-center text-xl" onclick="toggleMobileMenu()" aria-label="Toggle navigation" aria-expanded="false" id="menu-button">
           <i class="fa-solid fa-bars"></i>
         </button>
+      </div>
+    </div>
+    <div id="mobile-menu" class="hidden md:hidden border-t border-white/10 px-6 py-4 bg-zinc-950/95">
+      <div class="flex flex-col gap-4 text-sm font-medium">
+        <a href="#about" onclick="toggleMobileMenu()">About</a>
+        <a href="#obsessions" onclick="toggleMobileMenu()">Vibes</a>
+        <a href="#contact" onclick="toggleMobileMenu()">Contact</a>
       </div>
     </div>
   </nav>
@@ -161,7 +176,7 @@
     <div class="relative z-10 max-w-5xl mx-auto px-6 text-center">
       
       <div class="inline-flex items-center gap-x-2 px-5 py-1.5 rounded-3xl glass mb-8 text-sm tracking-[1.5px]">
-        <span>🐉</span>
+        <img src="targaryen-crest.png" class="dragon-crest-image" alt="Three-headed dragon crest">
         <span class="font-medium">DRAGON • BORN 1988</span>
       </div>
       
@@ -184,7 +199,8 @@
         
         <button onclick="roar()" 
                 class="px-10 py-4 rounded-3xl glass font-semibold text-lg hover:bg-white/10 active:scale-[0.985] transition-all flex items-center justify-center gap-x-3 w-full sm:w-auto">
-          🐉 Roar with me
+          <img src="targaryen-crest.png" class="dragon-crest-image" alt="">
+          Roar with me
         </button>
       </div>
       
@@ -283,8 +299,12 @@
     }
     
     function toggleMobileMenu() {
-      const nav = document.querySelector('nav');
-      alert('Mobile menu would open here (we can build this next if you want)');
+      const menu = document.getElementById('mobile-menu');
+      const button = document.getElementById('menu-button');
+      const isOpen = !menu.classList.contains('hidden');
+      menu.classList.toggle('hidden', isOpen);
+      button.setAttribute('aria-expanded', String(!isOpen));
+      button.querySelector('i').className = isOpen ? 'fa-solid fa-bars' : 'fa-solid fa-xmark';
     }
     
     // Easter egg: Press "B" to slightly change the background vibe
@@ -311,7 +331,7 @@
       
       // Fun text flash
       const originalText = document.querySelector('h1').innerHTML;
-      document.querySelector('h1').innerHTML = 'RAWRRR 🐉';
+      document.querySelector('h1').innerHTML = 'RAWRRR <img src="targaryen-crest.png" class="dragon-crest-image inline-block align-middle" alt="Three-headed dragon crest">';
       
       setTimeout(() => {
         hero.style.background = originalBg || '';
@@ -340,12 +360,12 @@
         particle.style.top = `${top}%`;
         
         // Random size variation
-        const size = 4 + Math.random() * 8;
-        particle.style.width = `${size}px`;
-        particle.style.height = `${size}px`;
+        const size = 10 + Math.random() * 17;
+        particle.style.setProperty('--flame-size', `${size}px`);
+        particle.style.setProperty('--flame-drift', `${24 + Math.random() * 68}px`);
         
         // Random animation duration
-        particle.style.animationDuration = (0.8 + Math.random() * 0.9) + 's';
+        particle.style.setProperty('--flame-duration', (1.25 + Math.random() * 1.15) + 's');
         
         container.appendChild(particle);
         
@@ -387,8 +407,6 @@
         }
       }, 4200);
 
-      // Start WebGL fire shader particles
-      initWebGLFire();
     }
 
     // WebGL Fire Particles using Three.js (shaders + particles)
