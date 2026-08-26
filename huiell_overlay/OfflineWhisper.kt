@@ -11,8 +11,8 @@ import java.io.File
 
 class OfflineWhisper(private val context: Context) {
     private val modelDir = File(context.filesDir, "whisper").apply { mkdirs() }
-    private val modelFile = File(modelDir, "ggml-base.bin")
-    private val bundledAsset = "models/ggml-base.bin"
+    private val modelFile = File(modelDir, "ggml-tiny.bin")
+    private val bundledAsset = "models/ggml-tiny.bin"
     private var loadedModel: WhisperModel? = null
 
     private fun bundledModelExists(): Boolean = runCatching {
@@ -26,15 +26,15 @@ class OfflineWhisper(private val context: Context) {
         modelFile.isFile && modelFile.length() > 10_000_000L ->
             "Whisper: ${modelFile.name} • ${(modelFile.length() / 1024 / 1024)} MB • offline"
         bundledModelExists() ->
-            "Whisper: ggml-base.bin • bundled • offline"
+            "Whisper: tiny multilingual • bundled • offline"
         else ->
-            "Whisper: mudel puudub • mikrofoni vajutades vali ggml-base.bin"
+            "Whisper: mudel puudub • mikrofoni vajutades vali ggml-tiny.bin"
     }
 
     private suspend fun ensureLocalModel(): File = withContext(Dispatchers.IO) {
         if (modelFile.isFile && modelFile.length() > 10_000_000L) return@withContext modelFile
         require(bundledModelExists()) { "Whisperi mudel puudub" }
-        val tmp = File(modelDir, "ggml-base.bin.tmp")
+        val tmp = File(modelDir, "ggml-tiny.bin.tmp")
         context.assets.open(bundledAsset).use { input ->
             tmp.outputStream().use { output -> input.copyTo(output) }
         }
@@ -46,7 +46,7 @@ class OfflineWhisper(private val context: Context) {
 
     suspend fun importModel(uri: Uri) = withContext(Dispatchers.IO) {
         release()
-        val tmp = File(modelDir, "ggml-base.bin.tmp")
+        val tmp = File(modelDir, "ggml-tiny.bin.tmp")
         context.contentResolver.openInputStream(uri)?.use { input ->
             tmp.outputStream().use { output -> input.copyTo(output) }
         } ?: error("Whisperi mudelit ei saanud avada")
@@ -63,12 +63,7 @@ class OfflineWhisper(private val context: Context) {
         val result = Whisper.transcribe(
             model,
             audioFile.absolutePath,
-            WhisperConfig(
-                language = "auto",
-                translate = false,
-                threads = 4,
-                printTimestamps = false,
-            ),
+            WhisperConfig(language = "auto", translate = false, threads = 4, printTimestamps = false),
         )
         return result.text.trim()
     }
