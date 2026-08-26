@@ -25,6 +25,16 @@ say "Fetching Qwen3-TTS native engine"
 rm -rf "$APPROOT/external"; mkdir -p "$APPROOT/external"
 git clone --depth 1 --recurse-submodules https://github.com/Danmoreng/qwen3-tts.cpp.git "$APPROOT/external/qwen3-tts.cpp"
 git -C "$APPROOT/external/qwen3-tts.cpp" submodule update --init --recursive --depth 1
+
+say "Patching Qwen3-TTS JNI for Android NDK C++ signature"
+python3 - <<'PY'
+from pathlib import Path
+p = Path('.huiell-build/llama.cpp/examples/llama.android/external/qwen3-tts.cpp/src/qwen3_tts_jni.cpp')
+s = p.read_text()
+s = s.replace('void* attached_env = nullptr;', 'JNIEnv* attached_env = nullptr;')
+p.write_text(s)
+PY
+
 mkdir -p "$APPROOT/app/src/main/cpp" "$APPROOT/app/src/main/java/com/qwen/tts/studio/engine"
 curl -L --fail --retry 3 https://raw.githubusercontent.com/Danmoreng/qwen3-tts-android/main/app/src/main/cpp/CMakeLists.txt -o "$APPROOT/app/src/main/cpp/CMakeLists.txt"
 
