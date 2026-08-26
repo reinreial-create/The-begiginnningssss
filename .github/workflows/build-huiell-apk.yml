@@ -1,0 +1,111 @@
+name: Build Huiell Offline Voice APK
+
+on:
+  push:
+    branches:
+      - huiell-apk-build-20260826
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout build overlay
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android build components
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "ndk;29.0.13113456" "cmake;3.22.1"
+
+      - name: Clone llama.cpp Android project
+        run: |
+          git clone --depth 1 https://github.com/ggml-org/llama.cpp.git buildsrc
+
+      - name: Apply Huiell offline voice overlay
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT="$GITHUB_WORKSPACE/buildsrc/examples/llama.android"
+          cp "$GITHUB_WORKSPACE/huiell_overlay/MainActivity.kt" "$ROOT/app/src/main/java/com/example/llama/MainActivity.kt"
+          cp "$GITHUB_WORKSPACE/huiell_overlay/OfflineWhisper.kt" "$ROOT/app/src/main/java/com/example/llama/OfflineWhisper.kt"
+          cp "$GITHUB_WORKSPACE/huiell_overlay/OfflineWavRecorder.kt" "$ROOT/app/src/main/java/com/example/llama/OfflineWavRecorder.kt"
+          cp "$GITHUB_WORKSPACE/huiell_overlay/activity_main.xml" "$ROOT/app/src/main/res/layout/activity_main.xml"
+
+          cat > "$ROOT/app/src/main/res/drawable/outline_mic_24.xml" <<'EOF'
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="@android:color/white" android:pathData="M12,14a3,3 0,0 0,3 -3V5a3,3 0,0 0,-6 0v6a3,3 0,0 0,3 3zM17.3,11a5.3,5.3 0,0 1,-10.6 0H5a7,7 0,0 0,6 6.92V21H8v2h8v-2h-3v-3.08A7,7 0,0 0,19 11z"/>
+          </vector>
+          EOF
+
+          cat > "$ROOT/app/src/main/res/drawable/outline_stop_24.xml" <<'EOF'
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+              <path android:fillColor="@android:color/white" android:pathData="M6,6h12v12H6z"/>
+          </vector>
+          EOF
+
+          python3 - <<'PY'
+          from pathlib import Path
+          root = Path('buildsrc/examples/llama.android')
+
+          gradle = root / 'app/build.gradle.kts'
+          text = gradle.read_text()
+          dep = '    implementation("dev.ffmpegkit-maintained:whisper-android:1.0.0")\n'
+          if 'dev.ffmpegkit-maintained:whisper-android' not in text:
+              text = text.replace('dependencies {\n', 'dependencies {\n' + dep, 1)
+          gradle.write_text(text)
+
+          manifest = root / 'app/src/main/AndroidManifest.xml'
+          text = manifest.read_text()
+          perm = '    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n\n'
+          if 'android.permission.RECORD_AUDIO' not in text:
+              text = text.replace('<manifest xmlns:android="http://schemas.android.com/apk/res/android">\n', '<manifest xmlns:android="http://schemas.android.com/apk/res/android">\n\n' + perm, 1)
+          manifest.write_text(text)
+
+          strings = root / 'app/src/main/res/values/strings.xml'
+          text = strings.read_text()
+          import re
+          text = re.sub(r'<string name="app_name">.*?</string>', '<string name="app_name">Huiell</string>', text)
+          strings.write_text(text)
+          PY
+
+      - name: Bundle multilingual Whisper base model
+        run: |
+          set -euo pipefail
+          ROOT="$GITHUB_WORKSPACE/buildsrc/examples/llama.android"
+          mkdir -p "$ROOT/app/src/main/assets/models"
+          curl -L --fail --retry 3 --retry-delay 5 \
+            https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin \
+            -o "$ROOT/app/src/main/assets/models/ggml-base.bin"
+          ls -lh "$ROOT/app/src/main/assets/models/ggml-base.bin"
+
+      - name: Build debug APK
+        working-directory: buildsrc/examples/llama.android
+        run: |
+          chmod +x gradlew
+          ./gradlew :app:assembleDebug --stacktrace
+
+      - name: Rename APK
+        run: |
+          cp buildsrc/examples/llama.android/app/build/outputs/apk/debug/app-debug.apk Huiell-Offline-Voice-S22.apk
+          ls -lh Huiell-Offline-Voice-S22.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Huiell-Offline-Voice-S22
+          path: Huiell-Offline-Voice-S22.apk
+          if-no-files-found: error
+          retention-days: 7
