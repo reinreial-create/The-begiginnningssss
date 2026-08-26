@@ -85,7 +85,6 @@ class MainActivity : AppCompatActivity() {
             engine = AiChat.getInferenceEngine(applicationContext)
         }
 
-        // The owner explicitly chose Serena. Download her models once; after that she is offline.
         lifecycleScope.launch {
             try {
                 serenaTts.ensureModels { status -> updateSerenaStatus(status) }
@@ -329,9 +328,7 @@ class MainActivity : AppCompatActivity() {
                 throw cancelled
             } catch (e: Exception) {
                 Log.e(TAG, "Generation or Serena speech failed", e)
-                if (completedNormally) {
-                    updateSerenaStatus("Serena: ${e.message ?: "viga"}")
-                }
+                if (completedNormally) updateSerenaStatus("Serena: ${e.message ?: "viga"}")
             } finally {
                 withContext(Dispatchers.Main) {
                     userInputEt.isEnabled = true
@@ -347,7 +344,6 @@ class MainActivity : AppCompatActivity() {
         val llmFile = activeLlmModelFile
         val llmName = activeLlmModelName
 
-        // S22 memory is limited: unload the chat model while Serena's 1.7B TTS model is resident.
         engine.cleanUp()
         try {
             serenaTts.speak(text) { status -> updateSerenaStatus(status) }
@@ -363,14 +359,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun stripThinking(raw: String): String {
-        var visible = raw
-            .replace(THINK_BLOCK_REGEX, "")
-            .replace(THINK_TAG_REGEX, "")
-            .replace("/no_think", "", ignoreCase = true)
-
+        var visible = raw.replace(THINK_BLOCK_REGEX, "")
         val unclosedThink = visible.indexOf("<think>", ignoreCase = true)
         if (unclosedThink >= 0) visible = visible.substring(0, unclosedThink)
-
+        visible = visible
+            .replace(THINK_TAG_REGEX, "")
+            .replace("/no_think", "", ignoreCase = true)
         return visible.trimStart()
     }
 
@@ -417,6 +411,6 @@ class MainActivity : AppCompatActivity() {
 
 fun GgufMetadata.filename() = when {
     basic.name != null -> basic.name?.let { name -> basic.sizeLabel?.let { "$name-$it" } ?: name }
-    architecture?.architecture != null -> architecture?.architecture?.let { arch -> basic.uuid?.let { "$arch-$it" } ?: "$arch-${System.currentTimeMillis()}" }
+    architecture?.architecture != null -> architecture?.architecture?.let { arch -> basic.uuid?.let { "$arch-$it" } ?: "$arch-${System.currentTimeMillis().toHexString()}" }
     else -> "model-${System.currentTimeMillis().toHexString()}"
 }
