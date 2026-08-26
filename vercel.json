@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "bash build-huiell-vercel-v2.sh",
+  "buildCommand": "bash build-huiell-vercel-v3.sh",
   "outputDirectory": "public",
   "framework": null
 }
