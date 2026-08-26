@@ -1,0 +1,1 @@
+Trigger Vercel rebuild after installing required CMake 3.31.6.
