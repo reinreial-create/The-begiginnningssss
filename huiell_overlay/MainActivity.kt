@@ -19,9 +19,9 @@ import com.arm.aichat.InferenceEngine
 import com.arm.aichat.gguf.GgufMetadata
 import com.arm.aichat.gguf.GgufMetadataReader
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -44,15 +44,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var voiceRecorder: OfflineWavRecorder
     private lateinit var whisper: OfflineWhisper
     private lateinit var serenaTts: SerenaTts
-    private var serenaStatus: String = "Serena: käivitub…"
     private var pendingVoiceStart = false
     private var isVoiceBusy = false
 
     private var isModelReady = false
-    private var activeLlmModelFile: File? = null
-    private var activeLlmModelName: String? = null
     private val messages = mutableListOf<Message>()
-    private val rawAssistantMsg = StringBuilder()
     private val lastAssistantMsg = StringBuilder()
     private val messageAdapter = MessageAdapter(messages)
 
@@ -60,6 +56,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
+        onBackPressedDispatcher.addCallback {
+            if (voiceRecorder.isRecording) stopVoiceAndSend() else Log.w(TAG, "Back ignored")
+        }
 
         ggufTv = findViewById(R.id.gguf)
         whisperStatusTv = findViewById(R.id.whisper_status)
@@ -74,24 +73,10 @@ class MainActivity : AppCompatActivity() {
         voiceRecorder = OfflineWavRecorder(this)
         whisper = OfflineWhisper(this)
         serenaTts = SerenaTts(this)
-        serenaStatus = serenaTts.modelStatus()
         refreshVoiceStatus()
-
-        onBackPressedDispatcher.addCallback {
-            if (voiceRecorder.isRecording) stopVoiceAndSend() else Log.w(TAG, "Back ignored")
-        }
 
         lifecycleScope.launch(Dispatchers.Default) {
             engine = AiChat.getInferenceEngine(applicationContext)
-        }
-
-        lifecycleScope.launch {
-            try {
-                serenaTts.ensureModels { status -> updateSerenaStatus(status) }
-            } catch (e: Exception) {
-                Log.e(TAG, "Serena model preparation failed", e)
-                updateSerenaStatus("Serena: allalaadimine ebaõnnestus • proovin rääkimisel uuesti")
-            }
         }
 
         userActionFab.setOnClickListener {
@@ -121,20 +106,20 @@ class MainActivity : AppCompatActivity() {
     ) { uri ->
         uri ?: return@registerForActivityResult
         lifecycleScope.launch {
-            var imported = false
+            var startAfterImport = false
             setVoiceBusy(true, "Whisperi mudeli kopeerimine…")
             try {
                 whisper.importModel(uri)
-                imported = true
                 refreshVoiceStatus()
                 toast("Whisper valmis. Kõnetuvastus töötab nüüd offline.")
+                startAfterImport = true
             } catch (e: Exception) {
                 Log.e(TAG, "Whisper model import failed", e)
                 toast("Whisperi mudeli import ebaõnnestus: ${e.message}")
             } finally {
                 setVoiceBusy(false)
+                if (startAfterImport) ensureMicPermissionAndStart()
             }
-            if (imported) ensureMicPermissionAndStart()
         }
     }
 
@@ -157,9 +142,11 @@ class MainActivity : AppCompatActivity() {
     private fun startVoiceRecording() {
         if (isVoiceBusy || voiceRecorder.isRecording) return
         try {
+            serenaTts.stop()
             voiceRecorder.start(lifecycleScope)
             micFab.setImageResource(R.drawable.outline_stop_24)
             userInputEt.hint = "Kuulan… vajuta mikrofoni uuesti, kui lõpetad"
+            toast("Kuulan offline…")
         } catch (e: Exception) {
             Log.e(TAG, "Voice start failed", e)
             toast("Mikrofon ei käivitunud: ${e.message}")
@@ -193,6 +180,8 @@ class MainActivity : AppCompatActivity() {
                         setVoiceBusy(false)
                         handleUserInput()
                         return@launch
+                    } else {
+                        toast("Kõne tuvastatud. Vali nüüd Qweni GGUF mudel.")
                     }
                 }
             } catch (e: Exception) {
@@ -210,19 +199,15 @@ class MainActivity : AppCompatActivity() {
         userActionFab.isEnabled = !busy
         if (hint != null) userInputEt.hint = hint
         if (!busy && !voiceRecorder.isRecording) {
-            userInputEt.hint = if (isModelReady) "Kirjuta või räägi" else "Vali Qweni GGUF mudel"
+            userInputEt.hint = if (isModelReady) "Kirjuta või räägi eesti/inglise keeles" else "Vali esmalt Qweni GGUF mudel"
         }
     }
 
-    private fun refreshVoiceStatus() {
-        whisperStatusTv.text = "${whisper.modelStatus()}\n$serenaStatus"
-    }
-
-    private suspend fun updateSerenaStatus(status: String) {
-        withContext(Dispatchers.Main) {
-            serenaStatus = status
-            refreshVoiceStatus()
-        }
+    private fun refreshVoiceStatus(extra: String? = null) {
+        whisperStatusTv.text = listOfNotNull(
+            whisper.modelStatus(),
+            extra ?: serenaTts.modelStatus(),
+        ).joinToString("\n")
     }
 
     private fun handleSelectedModel(uri: Uri) {
@@ -246,16 +231,14 @@ class MainActivity : AppCompatActivity() {
                 } ?: error("GGUF faili ei saanud kopeerida")
 
                 loadModel(modelName, modelFile)
-                activeLlmModelName = modelName
-                activeLlmModelFile = modelFile
-
                 withContext(Dispatchers.Main) {
                     isModelReady = true
-                    userInputEt.hint = "Kirjuta või räägi"
+                    userInputEt.hint = "Kirjuta või räägi eesti/inglise keeles"
                     userInputEt.isEnabled = true
                     userActionFab.setImageResource(R.drawable.outline_send_24)
                     userActionFab.isEnabled = true
                     micFab.isEnabled = true
+                    refreshVoiceStatus()
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Model loading failed", e)
@@ -286,86 +269,72 @@ class MainActivity : AppCompatActivity() {
         }
 
     private fun handleUserInput() {
-        if (!isModelReady || isVoiceBusy || generationJob?.isActive == true) return
+        if (!isModelReady || isVoiceBusy) return
         val userMsg = userInputEt.text.toString().trim()
-        if (userMsg.isEmpty()) return
+        if (userMsg.isEmpty()) {
+            toast("Sõnum on tühi")
+            return
+        }
 
+        serenaTts.stop()
         userInputEt.text = null
         userInputEt.isEnabled = false
         userActionFab.isEnabled = false
         micFab.isEnabled = false
 
         messages.add(Message(UUID.randomUUID().toString(), userMsg, true))
-        rawAssistantMsg.clear()
         lastAssistantMsg.clear()
         messages.add(Message(UUID.randomUUID().toString(), "", false))
         messageAdapter.notifyItemRangeInserted(messages.size - 2, 2)
         messagesRv.scrollToPosition(messages.size - 1)
 
         generationJob = lifecycleScope.launch(Dispatchers.Default) {
-            var completedNormally = false
-            try {
-                engine.sendUserPrompt("/no_think\n$userMsg", predictLength = 320)
-                    .collect { token ->
-                        rawAssistantMsg.append(token)
-                        val visible = stripThinking(rawAssistantMsg.toString())
-                        lastAssistantMsg.clear().append(visible)
-                        withContext(Dispatchers.Main) {
-                            val last = messages.lastIndex
-                            check(last >= 0 && !messages[last].isUser)
-                            messages[last] = messages[last].copy(content = visible)
-                            messageAdapter.notifyItemChanged(last)
-                            messagesRv.scrollToPosition(last)
-                        }
+            engine.sendUserPrompt(userMsg, predictLength = 260)
+                .onCompletion { cause ->
+                    withContext(Dispatchers.Main) {
+                        userInputEt.isEnabled = true
+                        userActionFab.isEnabled = true
+                        micFab.isEnabled = true
                     }
-                completedNormally = true
-
-                val finalText = stripThinking(rawAssistantMsg.toString()).trim()
-                if (finalText.isNotEmpty()) {
-                    speakWithSerenaAndRestoreLlm(finalText)
+                    if (cause == null) {
+                        val spoken = visibleAssistantText(lastAssistantMsg.toString())
+                        if (spoken.isNotBlank()) speakAssistant(spoken)
+                    }
                 }
-            } catch (cancelled: CancellationException) {
-                throw cancelled
-            } catch (e: Exception) {
-                Log.e(TAG, "Generation or Serena speech failed", e)
-                if (completedNormally) updateSerenaStatus("Serena: ${e.message ?: "viga"}")
-            } finally {
-                withContext(Dispatchers.Main) {
-                    userInputEt.isEnabled = true
-                    userActionFab.isEnabled = true
-                    micFab.isEnabled = true
-                    userInputEt.hint = "Kirjuta või räägi"
+                .collect { token ->
+                    withContext(Dispatchers.Main) {
+                        val last = messages.lastIndex
+                        check(last >= 0 && !messages[last].isUser)
+                        val visible = visibleAssistantText(lastAssistantMsg.append(token).toString())
+                        messages[last] = messages[last].copy(content = visible)
+                        messageAdapter.notifyItemChanged(last)
+                        messagesRv.scrollToPosition(last)
+                    }
                 }
-            }
         }
     }
 
-    private suspend fun speakWithSerenaAndRestoreLlm(text: String) = withContext(Dispatchers.IO) {
-        val llmFile = activeLlmModelFile
-        val llmName = activeLlmModelName
-
-        engine.cleanUp()
+    private suspend fun speakAssistant(text: String) {
         try {
-            serenaTts.speak(text) { status -> updateSerenaStatus(status) }
-        } finally {
-            if (llmFile != null && llmFile.isFile) {
-                updateSerenaStatus("Serena valmis • Huielli mudeli taastamine…")
-                engine.loadModel(llmFile.path)
-                engine.setSystemPrompt(HUIELL_SYSTEM_PROMPT)
-                if (llmName != null) Log.i(TAG, "Restored LLM $llmName after Serena")
-                updateSerenaStatus(serenaTts.modelStatus())
+            serenaTts.speak(text) { status ->
+                withContext(Dispatchers.Main) { refreshVoiceStatus(status) }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Serena TTS failed", e)
+            withContext(Dispatchers.Main) {
+                refreshVoiceStatus()
+                toast("Serena hääl ei käivitunud: ${e.message}")
             }
         }
     }
 
-    private fun stripThinking(raw: String): String {
-        var visible = raw.replace(THINK_BLOCK_REGEX, "")
-        val unclosedThink = visible.indexOf("<think>", ignoreCase = true)
-        if (unclosedThink >= 0) visible = visible.substring(0, unclosedThink)
-        visible = visible
-            .replace(THINK_TAG_REGEX, "")
-            .replace("/no_think", "", ignoreCase = true)
-        return visible.trimStart()
+    private fun visibleAssistantText(raw: String): String {
+        var text = raw.replace(Regex("(?is)<think>.*?</think>"), "")
+        val openThink = text.indexOf("<think", ignoreCase = true)
+        if (openThink >= 0) text = text.substring(0, openThink)
+        return text
+            .replace(Regex("(?i)</?think[^>]*>"), "")
+            .trimStart()
     }
 
     private fun ensureModelsDirectory() =
@@ -394,23 +363,22 @@ class MainActivity : AppCompatActivity() {
         private val TAG = MainActivity::class.java.simpleName
         private const val DIRECTORY_MODELS = "models"
         private const val FILE_EXTENSION_GGUF = ".gguf"
-        private val THINK_BLOCK_REGEX = Regex("(?is)<think>.*?</think>")
-        private val THINK_TAG_REGEX = Regex("(?i)</?think>")
 
         private val HUIELL_SYSTEM_PROMPT = """
-            /no_think
-            You are Huiell. Execute the user's explicit request and return only the requested result.
-            Never show chain-of-thought, internal reasoning, analysis, planning, self-talk, or hidden deliberation.
-            Do not add unsolicited suggestions, alternatives, follow-up offers, lectures, warnings, or extra commentary.
-            Do not ask a follow-up question unless the request genuinely cannot be completed without one missing fact.
-            Match the user's language and tone. Keep the answer as short as the request allows.
-            Never claim to have used tools, the internet, files, or actions that did not actually happen.
+            You are Huiell, Rein's private on-device assistant.
+            Follow Rein's direct instructions and answer only what he asks.
+            Do not output chain-of-thought, hidden reasoning, <think> blocks, brainstorming, unrelated suggestions, or lectures.
+            Do not bring up wheels, drivers, BIOS, PC tuning, safety notes, or past topics unless Rein asks for that exact topic.
+            Do not argue. If something is impossible, say the blocker in one short sentence and do the closest useful step.
+            Reply naturally in the same language as Rein, especially Estonian or English.
+            Keep answers short and action-focused unless Rein asks for detail.
+            You are local/offline unless a real connected tool was used; never claim internet use inside the phone app.
         """.trimIndent()
     }
 }
 
 fun GgufMetadata.filename() = when {
     basic.name != null -> basic.name?.let { name -> basic.sizeLabel?.let { "$name-$it" } ?: name }
-    architecture?.architecture != null -> architecture?.architecture?.let { arch -> basic.uuid?.let { "$arch-$it" } ?: "$arch-${System.currentTimeMillis().toHexString()}" }
+    architecture?.architecture != null -> architecture?.architecture?.let { arch -> basic.uuid?.let { "$arch-$it" } ?: "$arch-${System.currentTimeMillis()}" }
     else -> "model-${System.currentTimeMillis().toHexString()}"
 }
