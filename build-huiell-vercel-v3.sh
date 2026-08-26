@@ -15,7 +15,7 @@ curl -L --fail --retry 3 https://dl.google.com/android/repository/commandlinetoo
 rm -rf "$SDK/cmdline-tools" "$WORK/cmdline"; mkdir -p "$SDK/cmdline-tools/latest" "$WORK/cmdline"
 unzip -q "$WORK/cmdline-tools.zip" -d "$WORK/cmdline"; cp -a "$WORK/cmdline/cmdline-tools/." "$SDK/cmdline-tools/latest/"
 yes | sdkmanager --licenses >/dev/null 2>&1 || true
-sdkmanager 'platforms;android-36' 'build-tools;36.0.0' 'ndk;29.0.13113456' 'cmake;3.22.1'
+sdkmanager 'platforms;android-36' 'build-tools;36.0.0' 'ndk;29.0.13113456' 'cmake;3.31.6'
 
 say "Fetching llama.cpp"
 rm -rf "$WORK/llama.cpp"; git clone --depth 1 https://github.com/ggml-org/llama.cpp.git "$WORK/llama.cpp"
@@ -33,7 +33,6 @@ cat > "$APPROOT/app/src/main/res/drawable/outline_stop_24.xml" <<'EOF'
 <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24"><path android:fillColor="@android:color/white" android:pathData="M6,6h12v12H6z"/></vector>
 EOF
 
-# Write a known-valid manifest instead of injecting before the xmlns declaration.
 cat > "$APPROOT/app/src/main/AndroidManifest.xml" <<'EOF'
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
