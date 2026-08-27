@@ -74,9 +74,11 @@ class MainActivity : AppCompatActivity() {
         whisper = OfflineWhisper(this)
         serenaTts = SerenaTts(this)
         refreshVoiceStatus()
+        prepareWhisperSmallInBackground()
 
         lifecycleScope.launch(Dispatchers.Default) {
             engine = AiChat.getInferenceEngine(applicationContext)
+            restoreExistingQwenIfPresent()
         }
 
         userActionFab.setOnClickListener {
@@ -90,6 +92,47 @@ class MainActivity : AppCompatActivity() {
                 !whisper.hasModel() -> getWhisperModel.launch(arrayOf("*/*"))
                 else -> ensureMicPermissionAndStart()
             }
+        }
+    }
+
+    private fun prepareWhisperSmallInBackground() {
+        lifecycleScope.launch {
+            try {
+                whisper.prepareSmallModel { status ->
+                    withContext(Dispatchers.Main) {
+                        whisperStatusTv.text = listOf(status, serenaTts.modelStatus()).joinToString("\n")
+                    }
+                }
+                withContext(Dispatchers.Main) { refreshVoiceStatus() }
+            } catch (e: Exception) {
+                Log.w(TAG, "Whisper Small background download failed; Tiny remains available", e)
+                withContext(Dispatchers.Main) {
+                    refreshVoiceStatus()
+                }
+            }
+        }
+    }
+
+    private suspend fun restoreExistingQwenIfPresent() {
+        val existing = ensureModelsDirectory()
+            .listFiles()
+            ?.filter { it.isFile && it.extension.equals("gguf", ignoreCase = true) && it.length() > 100_000_000L }
+            ?.maxByOrNull { it.length() }
+            ?: return
+
+        try {
+            loadModel(existing.name, existing)
+            withContext(Dispatchers.Main) {
+                isModelReady = true
+                ggufTv.text = "Huiell • offline • ${existing.name}\nMälu: ainult selles telefonis"
+                userInputEt.hint = "Kirjuta või räägi eesti/inglise keeles"
+                userInputEt.isEnabled = true
+                userActionFab.setImageResource(R.drawable.outline_send_24)
+                userActionFab.isEnabled = true
+                micFab.isEnabled = true
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Existing Qwen restore failed", e)
         }
     }
 
@@ -145,7 +188,7 @@ class MainActivity : AppCompatActivity() {
             serenaTts.stop()
             voiceRecorder.start(lifecycleScope)
             micFab.setImageResource(R.drawable.outline_stop_24)
-            userInputEt.hint = "Kuulan… vajuta mikrofoni uuesti, kui lõpetad"
+            userInputEt.hint = "Kuulan eesti keelt… vajuta mikrofoni uuesti, kui lõpetad"
             toast("Kuulan offline…")
         } catch (e: Exception) {
             Log.e(TAG, "Voice start failed", e)
@@ -156,7 +199,7 @@ class MainActivity : AppCompatActivity() {
     private fun stopVoiceAndSend() {
         if (!voiceRecorder.isRecording || isVoiceBusy) return
         lifecycleScope.launch {
-            setVoiceBusy(true, "Whisper transkribeerib telefonis…")
+            setVoiceBusy(true, "Whisper transkribeerib eesti keelt telefonis…")
             micFab.setImageResource(R.drawable.outline_mic_24)
             val audio = try {
                 voiceRecorder.stop()
@@ -289,7 +332,8 @@ class MainActivity : AppCompatActivity() {
         messagesRv.scrollToPosition(messages.size - 1)
 
         generationJob = lifecycleScope.launch(Dispatchers.Default) {
-            engine.sendUserPrompt(userMsg, predictLength = 260)
+            val noThinkPrompt = "$userMsg\n/no_think"
+            engine.sendUserPrompt(noThinkPrompt, predictLength = 420)
                 .onCompletion { cause ->
                     withContext(Dispatchers.Main) {
                         userInputEt.isEnabled = true
@@ -334,6 +378,7 @@ class MainActivity : AppCompatActivity() {
         if (openThink >= 0) text = text.substring(0, openThink)
         return text
             .replace(Regex("(?i)</?think[^>]*>"), "")
+            .replace(Regex("(?im)^\\s*(analysis|reasoning)\\s*:\\s*"), "")
             .trimStart()
     }
 
@@ -369,7 +414,7 @@ class MainActivity : AppCompatActivity() {
             Follow Rein's direct instructions and answer only what he asks.
             Do not output chain-of-thought, hidden reasoning, <think> blocks, brainstorming, unrelated suggestions, or lectures.
             Do not bring up wheels, drivers, BIOS, PC tuning, safety notes, or past topics unless Rein asks for that exact topic.
-            Do not argue. If something is impossible, say the blocker in one short sentence and do the closest useful step.
+            If something cannot be done, state the blocker briefly and give the closest useful result.
             Reply naturally in the same language as Rein, especially Estonian or English.
             Keep answers short and action-focused unless Rein asks for detail.
             You are local/offline unless a real connected tool was used; never claim internet use inside the phone app.
