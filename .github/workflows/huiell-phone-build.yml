@@ -3,10 +3,11 @@ name: Huiell Phone APK
 on:
   push:
     branches:
-      - huiell-phone-build
+      - huiell-phone-v1
     paths:
       - 'huiell-phone/**'
       - '.github/workflows/huiell-phone-build.yml'
+      - 'vercel.json'
   workflow_dispatch:
 
 permissions:
@@ -14,60 +15,18 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 90
     steps:
-      - name: Checkout Huiell overlay
+      - name: Checkout Huiell v1
         uses: actions/checkout@v4
-        with:
-          ref: huiell-phone-build
 
-      - name: Get Qwen3 TTS Android base
-        run: |
-          git clone https://github.com/Danmoreng/qwen3-tts-android.git build-src
-          cd build-src
-          git checkout 35738304b31c425cc08fb5405372fedfd6531b3b
-          git submodule sync --recursive
-          git submodule update --init --recursive --depth=1
+      - name: Build Huiell arm64 APK
+        run: bash huiell-phone/vercel-build.sh
 
-      - name: Apply Huiell phone changes
-        run: python3 huiell-phone/patch.py
-
-      - name: Set up Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Android toolchain
-        run: |
-          sdkmanager --install \
-            'platforms;android-36' \
-            'build-tools;36.0.0' \
-            'ndk;27.2.12479018' \
-            'cmake;3.22.1'
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Build signed release APK
-        working-directory: build-src
-        run: |
-          chmod +x ./gradlew
-          ./gradlew :app:assembleRelease --stacktrace
-
-      - name: Collect APK
-        run: |
-          mkdir -p artifacts
-          cp build-src/app/build/outputs/apk/release/app-release.apk artifacts/Huiell-S22-v0.4.apk
-          ls -lh artifacts/Huiell-S22-v0.4.apk
-
-      - name: Upload APK
+      - name: Upload installable APK
         uses: actions/upload-artifact@v4
         with:
-          name: Huiell-S22-v0.4
-          path: artifacts/Huiell-S22-v0.4.apk
+          name: Huiell-S22-v1
+          path: public/Huiell-S22-v1.apk
           if-no-files-found: error
