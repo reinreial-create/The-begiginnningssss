@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "echo Huiell Android build - no npm install",
+  "buildCommand": "bash huiell-phone/vercel-build.sh",
+  "outputDirectory": "public"
+}
