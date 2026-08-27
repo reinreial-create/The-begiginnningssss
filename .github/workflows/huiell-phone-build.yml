@@ -1,13 +1,6 @@
 name: Huiell Phone APK
 
 on:
-  push:
-    branches:
-      - huiell-phone-v1
-    paths:
-      - 'huiell-phone/**'
-      - '.github/workflows/huiell-phone-build.yml'
-      - 'vercel.json'
   workflow_dispatch:
 
 permissions:
