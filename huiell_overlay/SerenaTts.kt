@@ -27,26 +27,21 @@ class SerenaTts(private val context: Context) {
             tokenizerFile.isFile && tokenizerFile.length() > MIN_TOKENIZER_BYTES
 
     fun modelStatus(): String = if (hasModels()) {
-        "Serena: Qwen3-TTS 1.7B CustomVoice Q4_K_M • offline"
+        "Serena: Qwen3-TTS 0.6B CustomVoice Q4_K_M • offline"
     } else {
-        "Serena: mudelid laadimata • ~1.45 GB"
+        "Serena: mudelid laadimata • ~860 MB"
     }
 
     suspend fun ensureModels(onStatus: suspend (String) -> Unit = {}) = withContext(Dispatchers.IO) {
         modelDir.mkdirs()
         if (!tokenizerFile.isFile || tokenizerFile.length() <= MIN_TOKENIZER_BYTES) {
             onStatus("Serena 1/2: tokenizeri allalaadimine…")
-            downloadResumable(TOKENIZER_URL, tokenizerFile) { done, total ->
-                val pct = if (total > 0) (done * 100L / total).coerceIn(0L, 100L) else -1L
-                if (pct >= 0 && pct % 5L == 0L) {
-                    // Deliberately quiet; MainActivity shows coarse status only.
-                }
-            }
+            downloadResumable(TOKENIZER_URL, tokenizerFile) { _, _ -> }
         }
         require(tokenizerFile.length() > MIN_TOKENIZER_BYTES) { "Serena tokenizeri fail on vigane" }
 
         if (!talkerFile.isFile || talkerFile.length() <= MIN_TALKER_BYTES) {
-            onStatus("Serena 2/2: 1.7B häälemudeli allalaadimine…")
+            onStatus("Serena 2/2: 0.6B häälemudeli allalaadimine…")
             downloadResumable(TALKER_URL, talkerFile) { _, _ -> }
         }
         require(talkerFile.length() > MIN_TALKER_BYTES) { "Serena häälemudeli fail on vigane" }
@@ -200,19 +195,19 @@ class SerenaTts(private val context: Context) {
             connectTimeout = 30_000
             readTimeout = 60_000
             requestMethod = "GET"
-            setRequestProperty("User-Agent", "Huiell-Android/2")
+            setRequestProperty("User-Agent", "Huiell-Android/3")
             if (startAt > 0L) setRequestProperty("Range", "bytes=$startAt-")
             connect()
         }
 
     companion object {
         private const val LANGUAGE_ENGLISH = 2050
-        private const val TALKER_NAME = "qwen-talker-1.7b-customvoice-Q4_K_M.gguf"
+        private const val TALKER_NAME = "qwen-talker-0.6b-customvoice-Q4_K_M.gguf"
         private const val TOKENIZER_NAME = "qwen-tokenizer-12hz-Q4_K_M.gguf"
         private const val BASE_URL = "https://huggingface.co/Serveurperso/Qwen3-TTS-GGUF/resolve/main"
         private const val TALKER_URL = "$BASE_URL/$TALKER_NAME?download=true"
         private const val TOKENIZER_URL = "$BASE_URL/$TOKENIZER_NAME?download=true"
-        private const val MIN_TALKER_BYTES = 900_000_000L
+        private const val MIN_TALKER_BYTES = 500_000_000L
         private const val MIN_TOKENIZER_BYTES = 200_000_000L
     }
 }
