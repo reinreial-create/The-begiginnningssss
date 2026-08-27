@@ -1,0 +1,9 @@
+name: Runner Test
+on:
+  push:
+    branches: [huiell-phone-build]
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: echo "runner ok"
