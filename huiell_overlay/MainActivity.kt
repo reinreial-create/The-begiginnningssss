@@ -38,12 +38,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var userActionFab: FloatingActionButton
     private lateinit var micFab: FloatingActionButton
 
-    private lateinit var engine: InferenceEngine
+    private var engine: InferenceEngine? = null
     private var generationJob: Job? = null
 
     private lateinit var voiceRecorder: OfflineWavRecorder
     private lateinit var whisper: OfflineWhisper
-    private lateinit var serenaTts: SerenaTts
     private var pendingVoiceStart = false
     private var isVoiceBusy = false
 
@@ -55,64 +54,49 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        try {
-            enableEdgeToEdge()
-            setContentView(R.layout.activity_main)
+        enableEdgeToEdge()
+        setContentView(R.layout.activity_main)
 
-            ggufTv = findViewById(R.id.gguf)
-            whisperStatusTv = findViewById(R.id.whisper_status)
-            messagesRv = findViewById(R.id.messages)
-            userInputEt = findViewById(R.id.user_input)
-            userActionFab = findViewById(R.id.fab)
-            micFab = findViewById(R.id.mic_fab)
+        ggufTv = findViewById(R.id.gguf)
+        whisperStatusTv = findViewById(R.id.whisper_status)
+        messagesRv = findViewById(R.id.messages)
+        userInputEt = findViewById(R.id.user_input)
+        userActionFab = findViewById(R.id.fab)
+        micFab = findViewById(R.id.mic_fab)
 
-            messagesRv.layoutManager = LinearLayoutManager(this).apply { stackFromEnd = true }
-            messagesRv.adapter = messageAdapter
+        messagesRv.layoutManager = LinearLayoutManager(this).apply { stackFromEnd = true }
+        messagesRv.adapter = messageAdapter
 
-            voiceRecorder = OfflineWavRecorder(this)
-            whisper = OfflineWhisper(this)
-            serenaTts = SerenaTts(this)
-            refreshVoiceStatus("Serena: safe-start • ei lae native osa enne rääkimist")
+        voiceRecorder = OfflineWavRecorder(this)
+        whisper = OfflineWhisper(this)
 
-            onBackPressedDispatcher.addCallback {
-                if (::voiceRecorder.isInitialized && voiceRecorder.isRecording) stopVoiceAndSend() else Log.w(TAG, "Back ignored")
+        ggufTv.text = "Huiell • ultra-safe start\nNative Qwen/Serena ei lae avamisel."
+        refreshWhisperStatus()
+        markExistingQwenIfPresent()
+
+        onBackPressedDispatcher.addCallback {
+            if (voiceRecorder.isRecording) stopVoiceAndSend() else Log.w(TAG, "Back ignored")
+        }
+
+        userActionFab.setOnClickListener {
+            when {
+                isModelReady -> handleUserInput()
+                rememberedQwenFile != null -> loadRememberedQwen()
+                else -> getLlmModel.launch(arrayOf("*/*"))
             }
+        }
 
-            lifecycleScope.launch(Dispatchers.Default) {
-                try {
-                    engine = AiChat.getInferenceEngine(applicationContext)
-                    markExistingQwenIfPresent()
-                } catch (e: Throwable) {
-                    Log.e(TAG, "Core startup failed", e)
-                    withContext(Dispatchers.Main) {
-                        toast("Core startup error: ${e.message}")
-                    }
-                }
+        micFab.setOnClickListener {
+            when {
+                isVoiceBusy -> Unit
+                voiceRecorder.isRecording -> stopVoiceAndSend()
+                !whisper.hasModel() -> getWhisperModel.launch(arrayOf("*/*"))
+                else -> ensureMicPermissionAndStart()
             }
-
-            userActionFab.setOnClickListener {
-                when {
-                    isModelReady -> handleUserInput()
-                    rememberedQwenFile != null -> loadRememberedQwen()
-                    else -> getLlmModel.launch(arrayOf("*/*"))
-                }
-            }
-
-            micFab.setOnClickListener {
-                when {
-                    isVoiceBusy -> Unit
-                    voiceRecorder.isRecording -> stopVoiceAndSend()
-                    !whisper.hasModel() -> getWhisperModel.launch(arrayOf("*/*"))
-                    else -> ensureMicPermissionAndStart()
-                }
-            }
-        } catch (e: Throwable) {
-            Log.e(TAG, "Startup crashed", e)
-            toast("Huiell startup error: ${e.message}")
         }
     }
 
-    private suspend fun markExistingQwenIfPresent() {
+    private fun markExistingQwenIfPresent() {
         val existing = ensureModelsDirectory()
             .listFiles()
             ?.filter { it.isFile && it.extension.equals("gguf", ignoreCase = true) && it.length() > 100_000_000L }
@@ -120,12 +104,10 @@ class MainActivity : AppCompatActivity() {
             ?: return
 
         rememberedQwenFile = existing
-        withContext(Dispatchers.Main) {
-            ggufTv.text = "Qwen leitud telefonis • ${existing.name}\nSafe-start: vajuta Saada/Qwen, et laadida"
-            userInputEt.hint = "Qwen olemas. Vajuta Saada, et laadida mudel."
-            userActionFab.isEnabled = true
-            micFab.isEnabled = true
-        }
+        ggufTv.text = "Qwen leitud telefonis • ${existing.name}\nSafe-start: vajuta Saada/Qwen, et laadida."
+        userInputEt.hint = "Qwen olemas. Vajuta Saada, et laadida mudel."
+        userActionFab.isEnabled = true
+        micFab.isEnabled = true
     }
 
     private fun loadRememberedQwen() {
@@ -143,7 +125,6 @@ class MainActivity : AppCompatActivity() {
                     userActionFab.setImageResource(R.drawable.outline_send_24)
                     userActionFab.isEnabled = true
                     micFab.isEnabled = true
-                    refreshVoiceStatus("Serena: valmis, laadib hääle ainult vastuse ajal")
                     toast("Qwen laaditud")
                 }
             } catch (e: Throwable) {
@@ -151,7 +132,7 @@ class MainActivity : AppCompatActivity() {
                 withContext(Dispatchers.Main) {
                     userActionFab.isEnabled = true
                     rememberedQwenFile = null
-                    ggufTv.text = "Qweni automaatlaadimine ebaõnnestus. Vali GGUF käsitsi."
+                    ggufTv.text = "Qweni laadimine ebaõnnestus. Vali GGUF käsitsi."
                     toast("Qweni laadimine ebaõnnestus: ${e.message}")
                 }
             }
@@ -175,10 +156,10 @@ class MainActivity : AppCompatActivity() {
             setVoiceBusy(true, "Whisperi mudeli kopeerimine…")
             try {
                 whisper.importModel(uri)
-                refreshVoiceStatus()
+                refreshWhisperStatus()
                 toast("Whisper valmis. Kõnetuvastus töötab nüüd offline.")
                 startAfterImport = true
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 Log.e(TAG, "Whisper model import failed", e)
                 toast("Whisperi mudeli import ebaõnnestus: ${e.message}")
             } finally {
@@ -207,12 +188,11 @@ class MainActivity : AppCompatActivity() {
     private fun startVoiceRecording() {
         if (isVoiceBusy || voiceRecorder.isRecording) return
         try {
-            if (::serenaTts.isInitialized) serenaTts.stop()
             voiceRecorder.start(lifecycleScope)
             micFab.setImageResource(R.drawable.outline_stop_24)
             userInputEt.hint = "Kuulan eesti keelt… vajuta mikrofoni uuesti, kui lõpetad"
             toast("Kuulan offline…")
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             Log.e(TAG, "Voice start failed", e)
             toast("Mikrofon ei käivitunud: ${e.message}")
         }
@@ -221,13 +201,9 @@ class MainActivity : AppCompatActivity() {
     private fun stopVoiceAndSend() {
         if (!voiceRecorder.isRecording || isVoiceBusy) return
         lifecycleScope.launch {
-            setVoiceBusy(true, "Whisper transkribeerib eesti keelt telefonis…")
+            setVoiceBusy(true, "Whisper transkribeerib telefonis…")
             micFab.setImageResource(R.drawable.outline_mic_24)
-            val audio = try {
-                voiceRecorder.stop()
-            } catch (e: Exception) {
-                null
-            }
+            val audio = runCatching { voiceRecorder.stop() }.getOrNull()
             if (audio == null || audio.length() <= 44) {
                 setVoiceBusy(false)
                 toast("Heli ei salvestunud")
@@ -249,7 +225,7 @@ class MainActivity : AppCompatActivity() {
                         toast("Kõne tuvastatud. Laadi nüüd Qweni GGUF mudel.")
                     }
                 }
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 Log.e(TAG, "Whisper transcription failed", e)
                 toast("Offline kõnetuvastus ebaõnnestus: ${e.message}")
             } finally {
@@ -260,20 +236,18 @@ class MainActivity : AppCompatActivity() {
 
     private fun setVoiceBusy(busy: Boolean, hint: String? = null) {
         isVoiceBusy = busy
-        if (::micFab.isInitialized) micFab.isEnabled = !busy
-        if (::userActionFab.isInitialized) userActionFab.isEnabled = !busy
-        if (hint != null && ::userInputEt.isInitialized) userInputEt.hint = hint
-        if (!busy && ::voiceRecorder.isInitialized && !voiceRecorder.isRecording) {
+        micFab.isEnabled = !busy
+        userActionFab.isEnabled = !busy
+        if (hint != null) userInputEt.hint = hint
+        if (!busy && !voiceRecorder.isRecording) {
             userInputEt.hint = if (isModelReady) "Kirjuta või räägi eesti/inglise keeles" else "Laadi Qwen mudel"
         }
     }
 
-    private fun refreshVoiceStatus(extra: String? = null) {
-        if (!::whisperStatusTv.isInitialized || !::whisper.isInitialized) return
-        val serena = extra ?: runCatching { serenaTts.modelStatus() }.getOrElse { "Serena: safe-start" }
+    private fun refreshWhisperStatus() {
         whisperStatusTv.text = listOf(
             whisper.modelStatus(),
-            serena,
+            "Serena: välja lülitatud selles crash-fix buildis"
         ).joinToString("\n")
     }
 
@@ -306,7 +280,7 @@ class MainActivity : AppCompatActivity() {
                     userActionFab.setImageResource(R.drawable.outline_send_24)
                     userActionFab.isEnabled = true
                     micFab.isEnabled = true
-                    refreshVoiceStatus()
+                    refreshWhisperStatus()
                 }
             } catch (e: Throwable) {
                 Log.e(TAG, "Model loading failed", e)
@@ -332,20 +306,20 @@ class MainActivity : AppCompatActivity() {
         withContext(Dispatchers.IO) {
             Log.i(TAG, "Loading model $modelName")
             withContext(Dispatchers.Main) { userInputEt.hint = "Qweni mudeli laadimine…" }
-            if (!::engine.isInitialized) engine = AiChat.getInferenceEngine(applicationContext)
-            engine.loadModel(modelFile.path)
-            engine.setSystemPrompt(HUIELL_SYSTEM_PROMPT)
+            val e = engine ?: AiChat.getInferenceEngine(applicationContext).also { engine = it }
+            e.loadModel(modelFile.path)
+            e.setSystemPrompt(HUIELL_SYSTEM_PROMPT)
         }
 
     private fun handleUserInput() {
         if (!isModelReady || isVoiceBusy) return
+        val e = engine ?: return
         val userMsg = userInputEt.text.toString().trim()
         if (userMsg.isEmpty()) {
             toast("Sõnum on tühi")
             return
         }
 
-        if (::serenaTts.isInitialized) serenaTts.stop()
         userInputEt.text = null
         userInputEt.isEnabled = false
         userActionFab.isEnabled = false
@@ -359,16 +333,12 @@ class MainActivity : AppCompatActivity() {
 
         generationJob = lifecycleScope.launch(Dispatchers.Default) {
             val noThinkPrompt = "$userMsg\n/no_think"
-            engine.sendUserPrompt(noThinkPrompt, predictLength = 420)
-                .onCompletion { cause ->
+            e.sendUserPrompt(noThinkPrompt, predictLength = 420)
+                .onCompletion {
                     withContext(Dispatchers.Main) {
                         userInputEt.isEnabled = true
                         userActionFab.isEnabled = true
                         micFab.isEnabled = true
-                    }
-                    if (cause == null) {
-                        val spoken = visibleAssistantText(lastAssistantMsg.toString())
-                        if (spoken.isNotBlank()) speakAssistant(spoken)
                     }
                 }
                 .collect { token ->
@@ -381,20 +351,6 @@ class MainActivity : AppCompatActivity() {
                         messagesRv.scrollToPosition(last)
                     }
                 }
-        }
-    }
-
-    private suspend fun speakAssistant(text: String) {
-        try {
-            serenaTts.speak(text) { status ->
-                withContext(Dispatchers.Main) { refreshVoiceStatus(status) }
-            }
-        } catch (e: Throwable) {
-            Log.e(TAG, "Serena TTS failed", e)
-            withContext(Dispatchers.Main) {
-                refreshVoiceStatus("Serena: viga • ${e.message}")
-                toast("Serena hääl ei käivitunud: ${e.message}")
-            }
         }
     }
 
@@ -418,15 +374,14 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStop() {
         generationJob?.cancel()
-        if (::serenaTts.isInitialized) serenaTts.stop()
         super.onStop()
     }
 
     override fun onDestroy() {
+        generationJob?.cancel()
         if (::voiceRecorder.isInitialized) voiceRecorder.release()
         if (::whisper.isInitialized) whisper.release()
-        if (::serenaTts.isInitialized) serenaTts.stop()
-        if (::engine.isInitialized) engine.destroy()
+        engine?.destroy()
         super.onDestroy()
     }
 
