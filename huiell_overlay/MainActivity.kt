@@ -48,91 +48,113 @@ class MainActivity : AppCompatActivity() {
     private var isVoiceBusy = false
 
     private var isModelReady = false
+    private var rememberedQwenFile: File? = null
     private val messages = mutableListOf<Message>()
     private val lastAssistantMsg = StringBuilder()
     private val messageAdapter = MessageAdapter(messages)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
-        onBackPressedDispatcher.addCallback {
-            if (voiceRecorder.isRecording) stopVoiceAndSend() else Log.w(TAG, "Back ignored")
-        }
+        try {
+            enableEdgeToEdge()
+            setContentView(R.layout.activity_main)
 
-        ggufTv = findViewById(R.id.gguf)
-        whisperStatusTv = findViewById(R.id.whisper_status)
-        messagesRv = findViewById(R.id.messages)
-        userInputEt = findViewById(R.id.user_input)
-        userActionFab = findViewById(R.id.fab)
-        micFab = findViewById(R.id.mic_fab)
+            ggufTv = findViewById(R.id.gguf)
+            whisperStatusTv = findViewById(R.id.whisper_status)
+            messagesRv = findViewById(R.id.messages)
+            userInputEt = findViewById(R.id.user_input)
+            userActionFab = findViewById(R.id.fab)
+            micFab = findViewById(R.id.mic_fab)
 
-        messagesRv.layoutManager = LinearLayoutManager(this).apply { stackFromEnd = true }
-        messagesRv.adapter = messageAdapter
+            messagesRv.layoutManager = LinearLayoutManager(this).apply { stackFromEnd = true }
+            messagesRv.adapter = messageAdapter
 
-        voiceRecorder = OfflineWavRecorder(this)
-        whisper = OfflineWhisper(this)
-        serenaTts = SerenaTts(this)
-        refreshVoiceStatus()
-        prepareWhisperSmallInBackground()
+            voiceRecorder = OfflineWavRecorder(this)
+            whisper = OfflineWhisper(this)
+            serenaTts = SerenaTts(this)
+            refreshVoiceStatus("Serena: safe-start • ei lae native osa enne rääkimist")
 
-        lifecycleScope.launch(Dispatchers.Default) {
-            engine = AiChat.getInferenceEngine(applicationContext)
-            restoreExistingQwenIfPresent()
-        }
-
-        userActionFab.setOnClickListener {
-            if (isModelReady) handleUserInput() else getLlmModel.launch(arrayOf("*/*"))
-        }
-
-        micFab.setOnClickListener {
-            when {
-                isVoiceBusy -> Unit
-                voiceRecorder.isRecording -> stopVoiceAndSend()
-                !whisper.hasModel() -> getWhisperModel.launch(arrayOf("*/*"))
-                else -> ensureMicPermissionAndStart()
+            onBackPressedDispatcher.addCallback {
+                if (::voiceRecorder.isInitialized && voiceRecorder.isRecording) stopVoiceAndSend() else Log.w(TAG, "Back ignored")
             }
-        }
-    }
 
-    private fun prepareWhisperSmallInBackground() {
-        lifecycleScope.launch {
-            try {
-                whisper.prepareSmallModel { status ->
+            lifecycleScope.launch(Dispatchers.Default) {
+                try {
+                    engine = AiChat.getInferenceEngine(applicationContext)
+                    markExistingQwenIfPresent()
+                } catch (e: Throwable) {
+                    Log.e(TAG, "Core startup failed", e)
                     withContext(Dispatchers.Main) {
-                        whisperStatusTv.text = listOf(status, serenaTts.modelStatus()).joinToString("\n")
+                        toast("Core startup error: ${e.message}")
                     }
                 }
-                withContext(Dispatchers.Main) { refreshVoiceStatus() }
-            } catch (e: Exception) {
-                Log.w(TAG, "Whisper Small background download failed; Tiny remains available", e)
-                withContext(Dispatchers.Main) {
-                    refreshVoiceStatus()
+            }
+
+            userActionFab.setOnClickListener {
+                when {
+                    isModelReady -> handleUserInput()
+                    rememberedQwenFile != null -> loadRememberedQwen()
+                    else -> getLlmModel.launch(arrayOf("*/*"))
                 }
             }
+
+            micFab.setOnClickListener {
+                when {
+                    isVoiceBusy -> Unit
+                    voiceRecorder.isRecording -> stopVoiceAndSend()
+                    !whisper.hasModel() -> getWhisperModel.launch(arrayOf("*/*"))
+                    else -> ensureMicPermissionAndStart()
+                }
+            }
+        } catch (e: Throwable) {
+            Log.e(TAG, "Startup crashed", e)
+            toast("Huiell startup error: ${e.message}")
         }
     }
 
-    private suspend fun restoreExistingQwenIfPresent() {
+    private suspend fun markExistingQwenIfPresent() {
         val existing = ensureModelsDirectory()
             .listFiles()
             ?.filter { it.isFile && it.extension.equals("gguf", ignoreCase = true) && it.length() > 100_000_000L }
             ?.maxByOrNull { it.length() }
             ?: return
 
-        try {
-            loadModel(existing.name, existing)
-            withContext(Dispatchers.Main) {
-                isModelReady = true
-                ggufTv.text = "Huiell • offline • ${existing.name}\nMälu: ainult selles telefonis"
-                userInputEt.hint = "Kirjuta või räägi eesti/inglise keeles"
-                userInputEt.isEnabled = true
-                userActionFab.setImageResource(R.drawable.outline_send_24)
-                userActionFab.isEnabled = true
-                micFab.isEnabled = true
+        rememberedQwenFile = existing
+        withContext(Dispatchers.Main) {
+            ggufTv.text = "Qwen leitud telefonis • ${existing.name}\nSafe-start: vajuta Saada/Qwen, et laadida"
+            userInputEt.hint = "Qwen olemas. Vajuta Saada, et laadida mudel."
+            userActionFab.isEnabled = true
+            micFab.isEnabled = true
+        }
+    }
+
+    private fun loadRememberedQwen() {
+        val existing = rememberedQwenFile ?: return
+        userActionFab.isEnabled = false
+        userInputEt.hint = "Qweni mudeli laadimine telefonist…"
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                loadModel(existing.name, existing)
+                withContext(Dispatchers.Main) {
+                    isModelReady = true
+                    ggufTv.text = "Huiell • offline • ${existing.name}\nMälu: ainult selles telefonis"
+                    userInputEt.hint = "Kirjuta või räägi eesti/inglise keeles"
+                    userInputEt.isEnabled = true
+                    userActionFab.setImageResource(R.drawable.outline_send_24)
+                    userActionFab.isEnabled = true
+                    micFab.isEnabled = true
+                    refreshVoiceStatus("Serena: valmis, laadib hääle ainult vastuse ajal")
+                    toast("Qwen laaditud")
+                }
+            } catch (e: Throwable) {
+                Log.e(TAG, "Remembered Qwen load failed", e)
+                withContext(Dispatchers.Main) {
+                    userActionFab.isEnabled = true
+                    rememberedQwenFile = null
+                    ggufTv.text = "Qweni automaatlaadimine ebaõnnestus. Vali GGUF käsitsi."
+                    toast("Qweni laadimine ebaõnnestus: ${e.message}")
+                }
             }
-        } catch (e: Exception) {
-            Log.w(TAG, "Existing Qwen restore failed", e)
         }
     }
 
@@ -185,7 +207,7 @@ class MainActivity : AppCompatActivity() {
     private fun startVoiceRecording() {
         if (isVoiceBusy || voiceRecorder.isRecording) return
         try {
-            serenaTts.stop()
+            if (::serenaTts.isInitialized) serenaTts.stop()
             voiceRecorder.start(lifecycleScope)
             micFab.setImageResource(R.drawable.outline_stop_24)
             userInputEt.hint = "Kuulan eesti keelt… vajuta mikrofoni uuesti, kui lõpetad"
@@ -224,7 +246,7 @@ class MainActivity : AppCompatActivity() {
                         handleUserInput()
                         return@launch
                     } else {
-                        toast("Kõne tuvastatud. Vali nüüd Qweni GGUF mudel.")
+                        toast("Kõne tuvastatud. Laadi nüüd Qweni GGUF mudel.")
                     }
                 }
             } catch (e: Exception) {
@@ -238,18 +260,20 @@ class MainActivity : AppCompatActivity() {
 
     private fun setVoiceBusy(busy: Boolean, hint: String? = null) {
         isVoiceBusy = busy
-        micFab.isEnabled = !busy
-        userActionFab.isEnabled = !busy
-        if (hint != null) userInputEt.hint = hint
-        if (!busy && !voiceRecorder.isRecording) {
-            userInputEt.hint = if (isModelReady) "Kirjuta või räägi eesti/inglise keeles" else "Vali esmalt Qweni GGUF mudel"
+        if (::micFab.isInitialized) micFab.isEnabled = !busy
+        if (::userActionFab.isInitialized) userActionFab.isEnabled = !busy
+        if (hint != null && ::userInputEt.isInitialized) userInputEt.hint = hint
+        if (!busy && ::voiceRecorder.isInitialized && !voiceRecorder.isRecording) {
+            userInputEt.hint = if (isModelReady) "Kirjuta või räägi eesti/inglise keeles" else "Laadi Qwen mudel"
         }
     }
 
     private fun refreshVoiceStatus(extra: String? = null) {
-        whisperStatusTv.text = listOfNotNull(
+        if (!::whisperStatusTv.isInitialized || !::whisper.isInitialized) return
+        val serena = extra ?: runCatching { serenaTts.modelStatus() }.getOrElse { "Serena: safe-start" }
+        whisperStatusTv.text = listOf(
             whisper.modelStatus(),
-            extra ?: serenaTts.modelStatus(),
+            serena,
         ).joinToString("\n")
     }
 
@@ -275,6 +299,7 @@ class MainActivity : AppCompatActivity() {
 
                 loadModel(modelName, modelFile)
                 withContext(Dispatchers.Main) {
+                    rememberedQwenFile = modelFile
                     isModelReady = true
                     userInputEt.hint = "Kirjuta või räägi eesti/inglise keeles"
                     userInputEt.isEnabled = true
@@ -283,7 +308,7 @@ class MainActivity : AppCompatActivity() {
                     micFab.isEnabled = true
                     refreshVoiceStatus()
                 }
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 Log.e(TAG, "Model loading failed", e)
                 withContext(Dispatchers.Main) {
                     userActionFab.isEnabled = true
@@ -307,6 +332,7 @@ class MainActivity : AppCompatActivity() {
         withContext(Dispatchers.IO) {
             Log.i(TAG, "Loading model $modelName")
             withContext(Dispatchers.Main) { userInputEt.hint = "Qweni mudeli laadimine…" }
+            if (!::engine.isInitialized) engine = AiChat.getInferenceEngine(applicationContext)
             engine.loadModel(modelFile.path)
             engine.setSystemPrompt(HUIELL_SYSTEM_PROMPT)
         }
@@ -319,7 +345,7 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        serenaTts.stop()
+        if (::serenaTts.isInitialized) serenaTts.stop()
         userInputEt.text = null
         userInputEt.isEnabled = false
         userActionFab.isEnabled = false
@@ -363,10 +389,10 @@ class MainActivity : AppCompatActivity() {
             serenaTts.speak(text) { status ->
                 withContext(Dispatchers.Main) { refreshVoiceStatus(status) }
             }
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             Log.e(TAG, "Serena TTS failed", e)
             withContext(Dispatchers.Main) {
-                refreshVoiceStatus()
+                refreshVoiceStatus("Serena: viga • ${e.message}")
                 toast("Serena hääl ei käivitunud: ${e.message}")
             }
         }
@@ -392,14 +418,14 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStop() {
         generationJob?.cancel()
-        serenaTts.stop()
+        if (::serenaTts.isInitialized) serenaTts.stop()
         super.onStop()
     }
 
     override fun onDestroy() {
-        voiceRecorder.release()
-        whisper.release()
-        serenaTts.stop()
+        if (::voiceRecorder.isInitialized) voiceRecorder.release()
+        if (::whisper.isInitialized) whisper.release()
+        if (::serenaTts.isInitialized) serenaTts.stop()
         if (::engine.isInitialized) engine.destroy()
         super.onDestroy()
     }
