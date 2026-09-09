@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="et">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Telli AI pildid, tootefotode töötlus või short-form video R.Reial Studiolt.">
+  <title>Telli töö — R.Reial Studio</title>
+  <link rel="stylesheet" href="site.css">
+</head>
+<body data-lang="et">
+<nav class="nav"><div class="container nav-inner">
+  <a class="brand" href="index.html"><img src="targaryen-crest.png" alt="R.Reial crest"><span>R.Reial Studio<small>Digital creative services</small></span></a>
+  <div class="nav-links"><a href="services.html">Teenused</a><a href="portfolio.html">Portfoolio</a><a href="about.html">Minust</a><a href="contact.html">Kontakt</a></div>
+  <div class="lang-switch"><button data-lang-btn="et">ET</button><button data-lang-btn="en">EN</button></div>
+</div></nav>
+
+<main>
+<section class="hero"><div class="container form-shell">
+  <div class="eyebrow"><span class="lang-et">Tellimuspäring</span><span class="lang-en">Project request</span></div>
+  <h1><span class="lang-et">Räägi, mida sul vaja on.</span><span class="lang-en">Tell me what you need.</span></h1>
+  <p class="hero-copy"><span class="lang-et">Päringu saatmine ei kohusta sind ostma. Vaatan materjali üle ja kinnitan enne töö algust lõpliku hinna, mahu ning tähtaja.</span><span class="lang-en">Sending a request does not commit you to a purchase. Final scope, price and deadline are confirmed before work starts.</span></p>
+</div></section>
+
+<section class="section"><div class="container form-shell">
+  <form id="order-form" class="card" action="https://formsubmit.co/reinreial@gmail.com" method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="_subject" value="Uus tellimuspäring — reial.org">
+    <input type="hidden" name="_next" id="next-url" value="https://reial.org/thanks.html">
+    <input type="hidden" name="_template" value="table">
+    <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
+    <input type="hidden" name="Tellimuse number" id="order-id">
+
+    <div class="form-grid">
+      <div class="field"><label for="name"><span class="lang-et">Nimi</span><span class="lang-en">Name</span> *</label><input id="name" name="Nimi / Name" autocomplete="name" required maxlength="80"></div>
+      <div class="field"><label for="email">E-mail *</label><input id="email" type="email" name="email" autocomplete="email" required maxlength="120"></div>
+      <div class="field"><label for="phone"><span class="lang-et">Telefon</span><span class="lang-en">Phone</span></label><input id="phone" type="tel" name="Telefon / Phone" autocomplete="tel" maxlength="40"></div>
+      <div class="field"><label for="service"><span class="lang-et">Teenus</span><span class="lang-en">Service</span> *</label><select id="service" name="Teenus / Service" required><option value="">—</option><option value="AI pildipakett / AI image package">AI pildipakett / AI image package — al €49</option><option value="Tootepiltide töötlus / Product photo cleanup">Tootepiltide töötlus / Product photo cleanup — al €69</option><option value="Short-form video">Short-form video — al €89</option><option value="Eritöö / Custom work">Eritöö / Custom work</option></select></div>
+      <div class="field"><label for="deadline"><span class="lang-et">Soovitud tähtaeg</span><span class="lang-en">Preferred deadline</span></label><input id="deadline" type="date" name="Soovitud tähtaeg / Preferred deadline"></div>
+      <div class="field"><label for="budget"><span class="lang-et">Eelarve, kui on teada</span><span class="lang-en">Budget, if known</span></label><input id="budget" type="text" name="Eelarve / Budget" placeholder="nt €50–100 / e.g. €50–100" maxlength="60"></div>
+      <div class="field full"><label for="details"><span class="lang-et">Kirjelda tööd</span><span class="lang-en">Project description</span> *</label><textarea id="details" name="Töö kirjeldus / Project description" required maxlength="4000" placeholder="Mida on vaja teha, kuhu tulemust kasutad, soovitud stiil/formaat ja muu oluline info."></textarea></div>
+      <div class="field full"><label for="attachment"><span class="lang-et">Näidis või lähtefail</span><span class="lang-en">Reference or source file</span></label><input id="attachment" type="file" name="attachment" accept="image/png,image/jpeg,image/webp,application/pdf,video/mp4"><div class="form-note"><span class="lang-et">Soovi korral lisa üks näidis/lähtefail. Vormiteenuse faililimiit on kokku 10 MB; suuremate failide jaoks saada hiljem Drive/WeTransfer link.</span><span class="lang-en">Optional: attach one reference/source file. Form file limit is 10 MB total; for larger material, send a Drive/WeTransfer link after contact.</span></div></div>
+      <div class="field full"><label class="checkbox"><input type="checkbox" required name="Nõusolek / Consent" value="Jah / Yes"><span><span class="lang-et">Nõustun, et minu sisestatud andmeid kasutatakse ainult sellele tööpäringule vastamiseks ja tellimuse korraldamiseks.</span><span class="lang-en">I agree that my submitted details are used only to respond to this request and organise the project.</span></span></label></div>
+    </div>
+
+    <div class="notice" style="margin-top:22px"><strong><span class="lang-et">Oluline:</span><span class="lang-en">Important:</span></strong> <span class="lang-et">Veebilehel makset ei võeta. Lõplik hind ja töö sisu lepitakse enne alustamist eraldi kokku.</span><span class="lang-en">No payment is collected on this website. Final pricing and scope are agreed separately before work begins.</span></div>
+    <div class="hero-actions"><button class="btn btn-primary" type="submit"><span class="lang-et">Saada tellimuspäring</span><span class="lang-en">Send project request</span></button><a class="btn btn-secondary" href="services.html"><span class="lang-et">Tagasi teenuste juurde</span><span class="lang-en">Back to services</span></a></div>
+    <p class="form-note"><span class="lang-et">Esimesel kasutuskorral võib vormiteenus paluda saidi omanikul e-posti kaudu vastuvõtt kinnitada.</span><span class="lang-en">On first use, the form provider may ask the site owner to confirm delivery by email.</span></p>
+  </form>
+</div></section>
+</main>
+<footer class="footer"><div class="container footer-inner"><div>© 2026 R.Reial Studio</div><div><a href="mailto:reinreial@gmail.com">reinreial@gmail.com</a></div></div></footer>
+<script src="site.js"></script>
+<script>
+(() => {
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2,'0');
+  const id = `RR-${String(now.getFullYear()).slice(-2)}${pad(now.getMonth()+1)}${pad(now.getDate())}-${Math.random().toString(36).slice(2,7).toUpperCase()}`;
+  document.getElementById('order-id').value = id;
+  document.getElementById('next-url').value = `${location.origin}/thanks.html?order=${encodeURIComponent(id)}`;
+
+  const map = {images:'AI pildipakett / AI image package',photos:'Tootepiltide töötlus / Product photo cleanup',video:'Short-form video',custom:'Eritöö / Custom work'};
+  const requested = new URLSearchParams(location.search).get('service');
+  if (requested && map[requested]) document.getElementById('service').value = map[requested];
+
+  const deadline = document.getElementById('deadline');
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+  deadline.min = tomorrow.toISOString().slice(0,10);
+})();
+</script>
+</body></html>
