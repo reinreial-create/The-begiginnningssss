@@ -20,4 +20,13 @@
       syncButtons();
     });
   });
+
+  const footerRight = document.querySelector('.footer .footer-inner > div:last-child');
+  if (footerRight && !footerRight.querySelector('a[href="privacy.html"]')) {
+    footerRight.append(document.createTextNode(' · '));
+    const privacy = document.createElement('a');
+    privacy.href = 'privacy.html';
+    privacy.textContent = document.body.dataset.lang === 'en' ? 'Privacy & terms' : 'Privaatsus & tingimused';
+    footerRight.append(privacy);
+  }
 })();
