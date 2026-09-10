@@ -5,11 +5,23 @@
   <meta name="description" content="R.Reial Studio portfoolio — AI reklaamvisuaalid, tootepiltide töötlus ja short-form video demo-case'id.">
   <title>Portfoolio — R.Reial Studio</title>
   <link rel="stylesheet" href="site.css">
+  <style>
+    .media-case{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:0;overflow:hidden;border:1px solid var(--line);border-radius:24px;background:linear-gradient(180deg,var(--panel2),var(--panel));box-shadow:0 22px 60px rgba(0,0,0,.22)}
+    .media-case+.media-case{margin-top:26px}.media-case.reverse .media-wrap{order:2}.media-case.reverse .case-body{order:1}
+    .media-wrap{position:relative;min-height:430px;background:#080a0d;overflow:hidden;display:flex;align-items:center;justify-content:center}
+    .media-wrap img{width:100%;height:100%;min-height:430px;object-fit:cover}.media-wrap.contain img{object-fit:contain;background:#0b0d10;padding:18px}
+    .media-wrap video{width:100%;height:100%;max-height:720px;display:block;object-fit:contain;background:#060708}
+    .demo-badge{position:absolute;left:16px;top:16px;z-index:2;padding:7px 10px;border-radius:999px;background:rgba(9,11,14,.82);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(10px);font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#eee}
+    .case-body{padding:42px;display:flex;flex-direction:column;justify-content:center}.case-body h2{margin-top:14px}.case-body>p{color:var(--muted);font-size:1.02rem}
+    .case-meta{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}.case-meta>div{border-top:1px solid var(--line);padding-top:12px}.case-meta strong,.case-meta span{display:block}.case-meta strong{font-size:.76rem;text-transform:uppercase;letter-spacing:.09em;color:var(--accent2)}.case-meta span{margin-top:4px;color:#d5d8dd}
+    .demo-note{margin-top:26px;border:1px solid #3a302c;background:#171311;border-radius:16px;padding:18px;color:#d8c4bb}
+    @media(max-width:860px){.media-case{grid-template-columns:1fr}.media-case.reverse .media-wrap,.media-case.reverse .case-body{order:initial}.media-wrap,.media-wrap img{min-height:0}.case-body{padding:28px}.case-meta{grid-template-columns:1fr}}
+  </style>
 </head>
 <body data-lang="et">
 <nav class="nav"><div class="container nav-inner">
   <a class="brand" href="index.html"><img src="targaryen-crest.png" alt="R.Reial crest"><span>R.Reial Studio<small>Digital creative services</small></span></a>
-  <div class="nav-links"><a href="services.html">Teenused</a><a href="portfolio.html">Portfoolio</a><a href="about.html">Minust</a><a href="contact.html">Kontakt</a><a class="btn btn-primary" href="order.html">Telli töö</a></div>
+  <div class="nav-links"><a href="services.html"><span class="lang-et">Teenused</span><span class="lang-en">Services</span></a><a href="portfolio.html"><span class="lang-et">Portfoolio</span><span class="lang-en">Portfolio</span></a><a href="about.html"><span class="lang-et">Minust</span><span class="lang-en">About</span></a><a href="contact.html"><span class="lang-et">Kontakt</span><span class="lang-en">Contact</span></a><a class="btn btn-primary" href="order.html"><span class="lang-et">Telli töö</span><span class="lang-en">Order now</span></a></div>
   <div class="lang-switch"><button data-lang-btn="et">ET</button><button data-lang-btn="en">EN</button></div>
 </div></nav>
 
@@ -17,59 +29,50 @@
 <section class="hero"><div class="container">
   <div class="eyebrow"><span class="lang-et">Valitud demotööd</span><span class="lang-en">Selected demo work</span></div>
   <h1><span class="lang-et">Tulemus enne tehnoloogiat.</span><span class="lang-en">Results before technology.</span></h1>
-  <p class="hero-copy"><span class="lang-et">Kolm näidet teenustest, mida R.Reial Studio pakub: kampaaniavisuaal, tootepildi viimistlus ja vertikaalne short-form video. Kõik allolevad tööd on ausalt märgitud demo-kontseptsioonideks.</span><span class="lang-en">Three examples of R.Reial Studio services: campaign visual, product-photo refinement and vertical short-form video. Every item below is clearly marked as concept work.</span></p>
+  <p class="hero-copy"><span class="lang-et">Kolm päriselt vaadatavat näidet: kampaaniavisuaal, tootepildi before/after ning vertikaalne short-form showreel. Kõik on ausalt märgitud demo-kontseptsioonideks.</span><span class="lang-en">Three viewable examples: campaign creative, product-photo before/after and a vertical short-form showreel. All are clearly marked as demo concepts.</span></p>
   <div class="trust-row"><span class="trust-pill">AI-assisted creative</span><span class="trust-pill"><span class="lang-et">Pildi- ja videotöötlus</span><span class="lang-en">Image & video editing</span></span><span class="trust-pill">Estonia / Worldwide</span></div>
 </div></section>
 
-<section class="section"><div class="container case-stack">
-  <article class="case-card">
-    <div class="case-preview auto">
-      <div class="case-watermark">R.Reial Studio · Concept 01</div>
-      <div class="case-preview-copy"><strong>North<br>Gloss</strong><small>Premium automotive campaign</small></div>
-    </div>
+<section class="section"><div class="container">
+  <article class="media-case">
+    <div class="media-wrap"><span class="demo-badge">Demo concept · 01</span><img src="north-gloss-demo.webp" alt="North Gloss premium automotive campaign demo" loading="eager"></div>
     <div class="case-body">
-      <span class="tag"><span class="lang-et">Demo-kontseptsioon · AI visuaalid</span><span class="lang-en">Demo concept · AI visuals</span></span>
-      <h2><span class="lang-et">Premium autohoolduse reklaam</span><span class="lang-en">Premium automotive campaign</span></h2>
-      <p><span class="lang-et">Kontseptsioon detailing-teenusele: luksuslik must visuaalikeel, tugev toote fookus ja selge CTA. Eesmärk on näidata, kuidas üks lihtne teenus saab sotsiaalmeedias premium mulje.</span><span class="lang-en">A detailing-service concept built around a premium dark visual language, strong product focus and a clear CTA. The goal is to show how a simple service can feel high-end in social media.</span></p>
+      <span class="tag"><span class="lang-et">AI visuaalid</span><span class="lang-en">AI visuals</span></span>
+      <h2><span class="lang-et">North Gloss — premium autohoolduse reklaam</span><span class="lang-en">North Gloss — premium automotive campaign</span></h2>
+      <p><span class="lang-et">Detailing-teenuse kampaaniavisuaal tumeda premium stiili, tugeva autofookuse ja selge reklaamiliku hierarhiaga.</span><span class="lang-en">A detailing-service campaign visual with a premium dark look, strong automotive focus and clear advertising hierarchy.</span></p>
       <div class="case-meta"><div><strong><span class="lang-et">Teenuse tüüp</span><span class="lang-en">Service type</span></strong><span>AI campaign visual</span></div><div><strong><span class="lang-et">Sobib</span><span class="lang-en">Best for</span></strong><span>Instagram · Facebook · Ads</span></div></div>
       <div class="hero-actions"><a class="btn btn-primary" href="order.html?service=images"><span class="lang-et">Telli sarnane töö</span><span class="lang-en">Order similar work</span></a></div>
     </div>
   </article>
 
-  <article class="case-card reverse">
-    <div class="case-preview product">
-      <div class="case-watermark">R.Reial Studio · Concept 02</div>
-      <div class="case-preview-copy"><strong>Before<br>→ After</strong><small>Product photo cleanup</small></div>
-    </div>
+  <article class="media-case reverse">
+    <div class="media-wrap contain"><span class="demo-badge">Demo concept · 02</span><img src="sneaker-restoration-demo.webp" alt="Sneaker restoration before and after product photo demo" loading="lazy"></div>
     <div class="case-body">
-      <span class="tag"><span class="lang-et">Demo-kontseptsioon · tootepilt</span><span class="lang-en">Demo concept · product photo</span></span>
-      <h2><span class="lang-et">Sneaker restoration before / after</span><span class="lang-en">Sneaker restoration before / after</span></h2>
-      <p><span class="lang-et">Müügile suunatud before/after näide: segav ja määrdunud algmulje muutub puhtaks, heledaks ning e-poe või kampaania jaoks kasutatavaks lõpptulemuseks.</span><span class="lang-en">A sales-focused before/after concept: a distracting, dirty starting point becomes a clean, bright result suitable for e-commerce or campaign use.</span></p>
+      <span class="tag"><span class="lang-et">Tootepilt / before-after</span><span class="lang-en">Product photo / before-after</span></span>
+      <h2>Sneaker restoration before / after</h2>
+      <p><span class="lang-et">Näide sellest, kuidas määrdunud ja segava algmuljega tootepilt muuta puhtaks, heledaks ning müügiks sobivaks lõpptulemuseks.</span><span class="lang-en">An example of turning a dirty, distracting source image into a clean, bright result suitable for selling online.</span></p>
       <div class="case-meta"><div><strong><span class="lang-et">Töötlus</span><span class="lang-en">Processing</span></strong><span>Cleanup · background · detail</span></div><div><strong><span class="lang-et">Väljund</span><span class="lang-en">Output</span></strong><span>E-commerce · listings · social</span></div></div>
       <div class="hero-actions"><a class="btn btn-primary" href="order.html?service=photos"><span class="lang-et">Telli tootepildid</span><span class="lang-en">Order product editing</span></a></div>
     </div>
   </article>
 
-  <article class="case-card">
-    <div class="case-preview video">
-      <div class="case-watermark">R.Reial Studio · Concept 03</div>
-      <div class="phone-frame"><span>12.2 sec<br>9:16<br>Short-form demo</span></div>
-    </div>
+  <article class="media-case">
+    <div class="media-wrap"><span class="demo-badge">Demo concept · 03</span><video controls playsinline preload="metadata" poster="showreel-poster.webp" aria-label="R.Reial Studio vertical short-form demo"><source src="reial-studio-showreel.mp4" type="video/mp4"><span class="lang-et">Sinu brauser ei toeta videot.</span><span class="lang-en">Your browser does not support video.</span></video></div>
     <div class="case-body">
-      <span class="tag"><span class="lang-et">Demo-kontseptsioon · video</span><span class="lang-en">Demo concept · video</span></span>
+      <span class="tag">Short-form video</span>
       <h2><span class="lang-et">Vertikaalne promo-showreel</span><span class="lang-en">Vertical promo showreel</span></h2>
-      <p><span class="lang-et">12,2-sekundiline 9:16 näidis, mis ühendab kiire intro, kampaaniavisuaali, before/after loo ja lõpu-CTA. Mõeldud Reelsi, TikToki ja YouTube Shortsi stiilis väljundiks.</span><span class="lang-en">A 12.2-second 9:16 demo combining a quick intro, campaign visual, before/after story and final CTA. Designed for Reels, TikTok and YouTube Shorts-style delivery.</span></p>
+      <p><span class="lang-et">12,2-sekundiline 9:16 näidis: kiire intro, kampaaniavisuaal, before/after lugu ja lõpu-CTA. Mõeldud Reelsi, TikToki ja YouTube Shortsi stiilis väljundiks.</span><span class="lang-en">A 12.2-second 9:16 demo: quick intro, campaign creative, before/after story and final CTA. Designed for Reels, TikTok and YouTube Shorts-style delivery.</span></p>
       <div class="case-meta"><div><strong><span class="lang-et">Formaat</span><span class="lang-en">Format</span></strong><span>9:16 · 720×1280</span></div><div><strong><span class="lang-et">Pikkus</span><span class="lang-en">Length</span></strong><span>12.2 seconds</span></div></div>
       <div class="hero-actions"><a class="btn btn-primary" href="order.html?service=video"><span class="lang-et">Telli short-form video</span><span class="lang-en">Order short-form video</span></a></div>
     </div>
   </article>
 
-  <div class="demo-note"><span class="lang-et"><strong>Märkus:</strong> need on R.Reial Studio enda portfoolio jaoks loodud demo-kontseptsioonid, mitte tasuliste klientide tööd. See eristus jääb alles kuni päris kliendiprojektid need näited välja vahetavad.</span><span class="lang-en"><strong>Note:</strong> these are R.Reial Studio portfolio concepts, not paid client projects. That distinction remains visible until real client projects replace the demos.</span></div>
+  <div class="demo-note"><span class="lang-et"><strong>Märkus:</strong> need on R.Reial Studio enda portfoolio jaoks loodud demo-kontseptsioonid, mitte tasuliste klientide tööd. Päris klienditööd lisanduvad nende asemele jooksvalt.</span><span class="lang-en"><strong>Note:</strong> these are R.Reial Studio portfolio concepts, not paid client projects. Real client work will replace and expand these examples over time.</span></div>
 
-  <div class="card" style="padding:34px"><div class="section-head" style="margin-bottom:0"><div><div class="eyebrow"><span class="lang-et">Sul on päris projekt?</span><span class="lang-en">Have a real project?</span></div><h2><span class="lang-et">Teeme järgmise case'i sinu omast.</span><span class="lang-en">Let’s make the next case yours.</span></h2></div><a class="btn btn-primary" href="order.html"><span class="lang-et">Saada tellimuspäring</span><span class="lang-en">Send project request</span></a></div></div>
+  <div class="card" style="padding:34px;margin-top:26px"><div class="section-head" style="margin-bottom:0"><div><div class="eyebrow"><span class="lang-et">Sul on päris projekt?</span><span class="lang-en">Have a real project?</span></div><h2><span class="lang-et">Teeme järgmise case'i sinu omast.</span><span class="lang-en">Let’s make the next case yours.</span></h2></div><a class="btn btn-primary" href="order.html"><span class="lang-et">Saada tellimuspäring</span><span class="lang-en">Send project request</span></a></div></div>
 </div></section>
 </main>
 
-<footer class="footer"><div class="container footer-inner"><div>© 2026 R.Reial Studio</div><div>Professional digital work · Estonia / Worldwide</div></div></footer>
+<footer class="footer"><div class="container footer-inner"><div>© 2026 R.Reial Studio</div><div><a href="privacy.html"><span class="lang-et">Privaatsus ja tingimused</span><span class="lang-en">Privacy & terms</span></a></div></div></footer>
 <script src="site.js"></script>
 </body></html>
